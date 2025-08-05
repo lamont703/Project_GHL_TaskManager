@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Settings</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <h1>TaskManager</h1>
+            </div>
+
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html">📊 Dashboard</a></li>
+                <li><a href="calendar.html">📅 Calendar View</a></li>
+                <li><a href="settings.html" class="active">⚙️ Settings</a></li>
+                <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="flex items-center">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <h2 class="font-semibold">Settings</h2>
+                </div>
+
+                <div class="user-profile">
+                    <span id="userName">Loading...</span>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="page-header">
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle">Manage your preferences and team settings</p>
+                </div>
+
+                <!-- Settings Sections -->
+                <div class="settings-container" style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                    <!-- Settings Navigation -->
+                    <div class="settings-nav bg-white rounded-lg shadow p-4">
+                        <h3 class="font-semibold mb-4">Settings Categories</h3>
+                        <ul class="settings-nav-list">
+                            <li><a href="#profile" class="settings-nav-link active" onclick="showSection('profile')">👤
+                                    Profile</a></li>
+                            <li><a href="#preferences" class="settings-nav-link" onclick="showSection('preferences')">🎨
+                                    Preferences</a></li>
+                            <li><a href="#team" class="settings-nav-link" onclick="showSection('team')">👥 Team
+                                    Management</a></li>
+                            <li><a href="#gohighlevel" class="settings-nav-link" onclick="showSection('gohighlevel')">🔗
+                                    GoHighLevel API</a></li>
+                            <li><a href="#notifications" class="settings-nav-link"
+                                    onclick="showSection('notifications')">🔔 Notifications</a></li>
+                            <li><a href="#data" class="settings-nav-link" onclick="showSection('data')">💾 Data &
+                                    Export</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Settings Content -->
+                    <div class="settings-content bg-white rounded-lg shadow p-6">
+                        <!-- Profile Section -->
+                        <div id="profile-section" class="settings-section">
+                            <h2 class="text-xl font-semibold mb-4">Profile Settings</h2>
+
+                            <form id="profileForm">
+                                <div class="form-group">
+                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <input type="text" id="fullName" class="form-input"
+                                        placeholder="Enter your full name">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" id="email" class="form-input" placeholder="Enter your email">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="role" class="form-label">Role</label>
+                                    <select id="role" class="form-input">
+                                        <option value="admin">Admin</option>
+                                        <option value="manager">Manager</option>
+                                        <option value="user">User</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="timezone" class="form-label">Timezone</label>
+                                    <select id="timezone" class="form-input">
+                                        <option value="UTC">UTC</option>
+                                        <option value="America/New_York">Eastern Time</option>
+                                        <option value="America/Chicago">Central Time</option>
+                                        <option value="America/Denver">Mountain Time</option>
+                                        <option value="America/Los_Angeles">Pacific Time</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Save Profile</button>
+                            </form>
+                        </div>
+
+                        <!-- Preferences Section -->
+                        <div id="preferences-section" class="settings-section hidden">
+                            <h2 class="text-xl font-semibold mb-4">Preferences</h2>
+
+                            <div class="form-group">
+                                <label class="form-label">Theme</label>
+                                <div class="flex gap-4">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="theme" value="light" checked class="mr-2">
+                                        Light
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="theme" value="dark" class="mr-2">
+                                        Dark
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="theme" value="auto" class="mr-2">
+                                        Auto
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="defaultView" class="form-label">Default View</label>
+                                <select id="defaultView" class="form-input">
+                                    <option value="dashboard">Dashboard</option>
+                                    <option value="calendar">Calendar</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tasksPerPage" class="form-label">Tasks Per Page</label>
+                                <select id="tasksPerPage" class="form-input">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="showCompleted" class="mr-2">
+                                    Show completed tasks by default
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="autoRefresh" class="mr-2">
+                                    Auto-refresh dashboard
+                                </label>
+                            </div>
+
+                            <button type="button" class="btn btn-primary" onclick="savePreferences()">Save
+                                Preferences</button>
+                        </div>
+
+                        <!-- Team Management Section -->
+                        <div id="team-section" class="settings-section hidden">
+                            <h2 class="text-xl font-semibold mb-4">Team Management</h2>
+
+                            <div class="mb-6">
+                                <h3 class="font-semibold mb-3">Team Members</h3>
+                                <div id="teamMembers" class="space-y-2">
+                                    <!-- Team members will be populated here -->
+                                </div>
+                                <button class="btn btn-primary mt-3" onclick="addTeamMember()">+ Add Team
+                                    Member</button>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="defaultAssignee" class="form-label">Default Task Assignee</label>
+                                <select id="defaultAssignee" class="form-input">
+                                    <option value="">Select default assignee</option>
+                                    <option value="Admin User">Admin User</option>
+                                    <option value="John Doe">John Doe</option>
+                                    <option value="Sarah Smith">Sarah Smith</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- GoHighLevel API Section -->
+                        <div id="gohighlevel-section" class="settings-section hidden">
+                            <h2 class="text-xl font-semibold mb-4">GoHighLevel API Integration</h2>
+
+                            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                                <h4 class="font-semibold text-blue-800">API Integration Status</h4>
+                                <p class="text-blue-600 text-sm">This is a prototype. In production, this will connect
+                                    to your GoHighLevel account.</p>
+                            </div>
+
+                            <form id="apiForm">
+                                <div class="form-group">
+                                    <label for="apiKey" class="form-label">API Key</label>
+                                    <input type="password" id="apiKey" class="form-input"
+                                        placeholder="Enter your GoHighLevel API key">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="apiEndpoint" class="form-label">API Endpoint</label>
+                                    <input type="url" id="apiEndpoint" class="form-input"
+                                        placeholder="https://api.gohighlevel.com/v1/"
+                                        value="https://api.gohighlevel.com/v1/">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="syncInterval" class="form-label">Sync Interval (minutes)</label>
+                                    <select id="syncInterval" class="form-input">
+                                        <option value="5">5 minutes</option>
+                                        <option value="15">15 minutes</option>
+                                        <option value="30">30 minutes</option>
+                                        <option value="60">1 hour</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <input type="checkbox" id="autoSync" class="mr-2">
+                                        Enable automatic synchronization
+                                    </label>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <button type="button" class="btn btn-secondary" onclick="testConnection()">Test
+                                        Connection</button>
+                                    <button type="submit" class="btn btn-primary">Save API Settings</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Notifications Section -->
+                        <div id="notifications-section" class="settings-section hidden">
+                            <h2 class="text-xl font-semibold mb-4">Notification Settings</h2>
+
+                            <div class="space-y-4">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <input type="checkbox" id="emailNotifications" class="mr-2">
+                                        Email notifications
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <input type="checkbox" id="taskReminders" class="mr-2">
+                                        Task due date reminders
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <input type="checkbox" id="overdueNotifications" class="mr-2">
+                                        Overdue task notifications
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <input type="checkbox" id="teamUpdates" class="mr-2">
+                                        Team member updates
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reminderTime" class="form-label">Daily Reminder Time</label>
+                                    <input type="time" id="reminderTime" class="form-input" value="09:00">
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-primary" onclick="saveNotifications()">Save
+                                Notifications</button>
+                        </div>
+
+                        <!-- Data & Export Section -->
+                        <div id="data-section" class="settings-section hidden">
+                            <h2 class="text-xl font-semibold mb-4">Data Management</h2>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <h3 class="font-semibold mb-3">Export Data</h3>
+                                    <div class="flex gap-2">
+                                        <button class="btn btn-secondary" onclick="exportTasks('json')">Export as
+                                            JSON</button>
+                                        <button class="btn btn-secondary" onclick="exportTasks('csv')">Export as
+                                            CSV</button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 class="font-semibold mb-3">Import Data</h3>
+                                    <input type="file" id="importFile" accept=".json,.csv" class="form-input"
+                                        onchange="importTasks()">
+                                </div>
+
+                                <div>
+                                    <h3 class="font-semibold mb-3">Reset Data</h3>
+                                    <button class="btn btn-secondary" onclick="resetToSampleData()">Reset to Sample
+                                        Data</button>
+                                </div>
+
+                                <div class="border-t pt-4">
+                                    <h3 class="font-semibold mb-3 text-red-600">Danger Zone</h3>
+                                    <button class="btn" style="background-color: #dc2626; color: white;"
+                                        onclick="clearAllData()">Clear All Data</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if user is logged in
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userData);
+            initializeUI();
+            loadSettings();
+        });
+
+        function initializeUI() {
+            // Set user info
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+
+            // Populate profile form
+            document.getElementById('fullName').value = currentUser.name;
+            document.getElementById('email').value = currentUser.email;
+            document.getElementById('role').value = currentUser.role;
+
+            // Load team members
+            loadTeamMembers();
+        }
+
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+
+            // Load preferences
+            if (settings.theme) {
+                document.querySelector(`input[name="theme"][value="${settings.theme}"]`).checked = true;
+            }
+            if (settings.defaultView) {
+                document.getElementById('defaultView').value = settings.defaultView;
+            }
+            if (settings.tasksPerPage) {
+                document.getElementById('tasksPerPage').value = settings.tasksPerPage;
+            }
+
+            // Load checkboxes
+            document.getElementById('showCompleted').checked = settings.showCompleted || false;
+            document.getElementById('autoRefresh').checked = settings.autoRefresh || false;
+            document.getElementById('emailNotifications').checked = settings.emailNotifications || false;
+            document.getElementById('taskReminders').checked = settings.taskReminders || false;
+            document.getElementById('overdueNotifications').checked = settings.overdueNotifications || false;
+            document.getElementById('teamUpdates').checked = settings.teamUpdates || false;
+
+            if (settings.reminderTime) {
+                document.getElementById('reminderTime').value = settings.reminderTime;
+            }
+        }
+
+        function loadTeamMembers() {
+            const teamMembers = ['Admin User', 'John Doe', 'Sarah Smith'];
+            const container = document.getElementById('teamMembers');
+
+            container.innerHTML = teamMembers.map(member => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div class="flex items-center">
+                        <div class="user-avatar mr-3">${member.charAt(0)}</div>
+                        <div>
+                            <div class="font-medium">${member}</div>
+                            <div class="text-sm text-gray-600">${member.toLowerCase().replace(' ', '@')}@company.com</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="editTeamMember('${member}')">Edit</button>
+                </div>
+            `).join('');
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.settings-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Remove active class from all nav links
+            document.querySelectorAll('.settings-nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId + '-section').classList.remove('hidden');
+
+            // Add active class to selected nav link
+            document.querySelector(`[onclick="showSection('${sectionId}')"]`).classList.add('active');
+        }
+
+        function savePreferences() {
+            const settings = {
+                theme: document.querySelector('input[name="theme"]:checked').value,
+                defaultView: document.getElementById('defaultView').value,
+                tasksPerPage: document.getElementById('tasksPerPage').value,
+                showCompleted: document.getElementById('showCompleted').checked,
+                autoRefresh: document.getElementById('autoRefresh').checked
+            };
+
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+            alert('Preferences saved successfully!');
+        }
+
+        function saveNotifications() {
+            const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+
+            settings.emailNotifications = document.getElementById('emailNotifications').checked;
+            settings.taskReminders = document.getElementById('taskReminders').checked;
+            settings.overdueNotifications = document.getElementById('overdueNotifications').checked;
+            settings.teamUpdates = document.getElementById('teamUpdates').checked;
+            settings.reminderTime = document.getElementById('reminderTime').value;
+
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+            alert('Notification settings saved successfully!');
+        }
+
+        function testConnection() {
+            alert('Connection test successful! (This is a demo - in production, this would test your GoHighLevel API connection)');
+        }
+
+        function addTeamMember() {
+            const name = prompt('Enter team member name:');
+            if (name) {
+                alert(`Team member "${name}" would be added in the production version.`);
+            }
+        }
+
+        function editTeamMember(member) {
+            alert(`Edit functionality for "${member}" would be available in the production version.`);
+        }
+
+        function exportTasks(format) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+
+            if (format === 'json') {
+                const dataStr = JSON.stringify(tasks, null, 2);
+                downloadFile(dataStr, 'tasks.json', 'application/json');
+            } else if (format === 'csv') {
+                const csvContent = convertToCSV(tasks);
+                downloadFile(csvContent, 'tasks.csv', 'text/csv');
+            }
+        }
+
+        function convertToCSV(tasks) {
+            const headers = ['ID', 'Title', 'Description', 'Due Date', 'Priority', 'Status', 'Owner', 'Created At'];
+            const rows = tasks.map(task => [
+                task.id,
+                task.title,
+                task.description || '',
+                task.dueDate,
+                task.priority,
+                task.status,
+                task.owner,
+                task.createdAt
+            ]);
+
+            return [headers, ...rows].map(row =>
+                row.map(field => `"${field}"`).join(',')
+            ).join('\n');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importTasks() {
+            const file = document.getElementById('importFile').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const tasks = JSON.parse(e.target.result);
+                        localStorage.setItem('tasks', JSON.stringify(tasks));
+                        alert('Tasks imported successfully!');
+                    } catch (error) {
+                        alert('Error importing tasks. Please check the file format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function resetToSampleData() {
+            if (confirm('This will replace all your current tasks with sample data. Are you sure?')) {
+                localStorage.removeItem('tasks');
+                alert('Data reset to sample data. Please refresh the dashboard to see changes.');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('This will permanently delete all your tasks and settings. Are you sure?')) {
+                localStorage.removeItem('tasks');
+                localStorage.removeItem('userSettings');
+                alert('All data cleared successfully!');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Form submissions
+        document.getElementById('profileForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const updatedUser = {
+                ...currentUser,
+                name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            currentUser = updatedUser;
+
+            // Update UI
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+
+            alert('Profile updated successfully!');
+        });
+
+        document.getElementById('apiForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('API settings saved! (This is a demo - in production, this would configure your GoHighLevel integration)');
+        });
+    </script>
+
+    <style>
+        .settings-nav-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .settings-nav-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-nav-link {
+            display: block;
+            padding: 0.75rem;
+            text-decoration: none;
+            color: #64748b;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .settings-nav-link:hover,
+        .settings-nav-link.active {
+            background-color: #f1f5f9;
+            color: #2563eb;
+        }
+
+        .settings-section {
+            max-width: 600px;
+        }
+
+        @media (max-width: 768px) {
+            .settings-container {
+                grid-template-columns: 1fr !important;
+            }
+
+            .settings-nav {
+                order: 2;
+            }
+
+            .settings-content {
+                order: 1;
+            }
+        }
+    </style>
+</body>
+
+</html>

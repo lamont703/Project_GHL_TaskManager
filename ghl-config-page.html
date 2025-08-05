@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager Integration Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .status-card {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-connected {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .status-disconnected {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-connected .status-icon {
+            background: #22c55e;
+        }
+
+        .status-disconnected .status-icon {
+            background: #ef4444;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-danger {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            color: #22c55e;
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .sync-options {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #2563eb;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-gray-600 {
+            color: #64748b;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Task Manager Integration</h1>
+            <p>Connect your GoHighLevel account with advanced task management</p>
+        </div>
+
+        <div class="content">
+            <!-- Integration Status -->
+            <div id="statusCard" class="status-card status-disconnected">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="status-icon"></span>
+                        <span id="statusText">Integration Not Connected</span>
+                    </div>
+                    <div id="statusActions">
+                        <button class="btn btn-primary" onclick="connectIntegration()">Connect Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Messages -->
+            <div id="alertContainer"></div>
+
+            <!-- Connection Setup -->
+            <div id="setupSection">
+                <h2 class="mb-2">Features Available</h2>
+                <ul class="feature-list">
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        Automatic task creation from new contacts
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        Sync tasks between GoHighLevel and Task Manager
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        Create follow-up tasks for new opportunities
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        Appointment preparation task automation
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        Real-time two-way synchronization
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Configuration Options -->
+            <div id="configSection" class="hidden">
+                <h2 class="mb-2">Integration Settings</h2>
+
+                <div class="form-group">
+                    <label class="form-label">Default Task Owner</label>
+                    <select id="defaultOwner" class="form-select">
+                        <option value="">Select Default Owner</option>
+                        <option value="admin">Admin User</option>
+                        <option value="auto">Auto-assign from Contact Owner</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Default Task Priority</label>
+                    <select id="defaultPriority" class="form-select">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="sync-options">
+                    <h3 class="mb-2">Sync Options</h3>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="syncContacts" checked>
+                        <label for="syncContacts">Auto-create tasks for new contacts</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="syncOpportunities" checked>
+                        <label for="syncOpportunities">Create follow-up tasks for new opportunities</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="syncAppointments" checked>
+                        <label for="syncAppointments">Create preparation tasks for appointments</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="syncTasks" checked>
+                        <label for="syncTasks">Two-way task synchronization</label>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button class="btn btn-primary btn-full" onclick="saveConfiguration()">
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connected Actions -->
+            <div id="connectedSection" class="hidden">
+                <h2 class="mb-2">Integration Actions</h2>
+
+                <div class="flex gap-4">
+                    <button class="btn btn-primary" onclick="performInitialSync()">
+                        Initial Sync
+                    </button>
+                    <button class="btn btn-secondary" onclick="testConnection()">
+                        Test Connection
+                    </button>
+                    <button class="btn btn-danger" onclick="disconnectIntegration()">
+                        Disconnect
+                    </button>
+                </div>
+
+                <div class="mt-4">
+                    <h3 class="mb-2">Sync Status</h3>
+                    <div id="syncStatus" class="text-sm text-gray-600">
+                        Last sync: Never
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let locationId = null;
+        let isConnected = false;
+        let integrationConfig = {};
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get user context from GoHighLevel
+            getUserContext().then(context => {
+                locationId = context.locationId;
+                console.log('Location ID:', locationId);
+                checkConnectionStatus();
+            }).catch(error => {
+                console.error('Failed to get user context:', error);
+                showAlert('Failed to initialize. Please refresh the page.', 'error');
+            });
+        });
+
+        // Get user context from GoHighLevel parent window
+        function getUserContext() {
+            return new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                    reject(new Error('Timeout waiting for user context'));
+                }, 5000);
+
+                const messageHandler = (event) => {
+                    if (event.data && event.data.message === 'REQUEST_USER_DATA_RESPONSE') {
+                        clearTimeout(timeout);
+                        window.removeEventListener('message', messageHandler);
+                        resolve(event.data.payload);
+                    }
+                };
+
+                window.addEventListener('message', messageHandler);
+                window.parent.postMessage({ message: 'REQUEST_USER_DATA' }, '*');
+            });
+        }
+
+        // Check if integration is already connected
+        async function checkConnectionStatus() {
+            try {
+                const response = await fetch('/api/integration/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ locationId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateConnectionStatus(data.connected, data.config);
+                } else {
+                    updateConnectionStatus(false);
+                }
+            } catch (error) {
+                console.error('Connection check failed:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        // Update UI based on connection status
+        function updateConnectionStatus(connected, config = {}) {
+            isConnected = connected;
+            integrationConfig = config;
+
+            const statusCard = document.getElementById('statusCard');
+            const statusText = document.getElementById('statusText');
+            const statusActions = document.getElementById('statusActions');
+            const setupSection = document.getElementById('setupSection');
+            const configSection = document.getElementById('configSection');
+            const connectedSection = document.getElementById('connectedSection');
+
+            if (connected) {
+                statusCard.className = 'status-card status-connected';
+                statusText.textContent = 'Integration Connected';
+                statusActions.innerHTML = '<span class="text-sm text-gray-600">Active</span>';
+
+                setupSection.classList.add('hidden');
+                configSection.classList.remove('hidden');
+                connectedSection.classList.remove('hidden');
+
+                // Populate configuration form
+                populateConfigForm(config);
+            } else {
+                statusCard.className = 'status-card status-disconnected';
+                statusText.textContent = 'Integration Not Connected';
+                statusActions.innerHTML = '<button class="btn btn-primary" onclick="connectIntegration()">Connect Now</button>';
+
+                setupSection.classList.remove('hidden');
+                configSection.classList.add('hidden');
+                connectedSection.classList.add('hidden');
+            }
+        }
+
+        // Populate configuration form with existing settings
+        function populateConfigForm(config) {
+            document.getElementById('defaultOwner').value = config.defaultOwner || '';
+            document.getElementById('defaultPriority').value = config.defaultPriority || 'medium';
+            document.getElementById('syncContacts').checked = config.syncContacts !== false;
+            document.getElementById('syncOpportunities').checked = config.syncOpportunities !== false;
+            document.getElementById('syncAppointments').checked = config.syncAppointments !== false;
+            document.getElementById('syncTasks').checked = config.syncTasks !== false;
+        }
+
+        // Connect integration
+        async function connectIntegration() {
+            const authUrl = `https://marketplace.gohighlevel.com/oauth/chooselocation?response_type=code&redirect_uri=${encodeURIComponent(window.location.origin + '/oauth/callback')}&client_id=YOUR_CLIENT_ID&scope=contacts.readonly contacts.write tasks.readonly tasks.write calendars.readonly calendars.write opportunities.readonly opportunities.write&state=${locationId}`;
+
+            // Open OAuth flow in popup
+            const popup = window.open(authUrl, 'ghl_oauth', 'width=500,height=600,scrollbars=yes,resizable=yes');
+
+            // Monitor popup for completion
+            const checkClosed = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkClosed);
+                    // Check connection status after popup closes
+                    setTimeout(() => {
+                        checkConnectionStatus();
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        // Save configuration
+        async function saveConfiguration() {
+            const config = {
+                locationId,
+                defaultOwner: document.getElementById('defaultOwner').value,
+                defaultPriority: document.getElementById('defaultPriority').value,
+                syncContacts: document.getElementById('syncContacts').checked,
+                syncOpportunities: document.getElementById('syncOpportunities').checked,
+                syncAppointments: document.getElementById('syncAppointments').checked,
+                syncTasks: document.getElementById('syncTasks').checked
+            };
+
+            try {
+                const response = await fetch('/api/integration/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    integrationConfig = config;
+                    showAlert('Configuration saved successfully!', 'success');
+                } else {
+                    showAlert('Failed to save configuration.', 'error');
+                }
+            } catch (error) {
+                console.error('Save configuration failed:', error);
+                showAlert('Failed to save configuration.', 'error');
+            }
+        }
+
+        // Perform initial sync
+        async function performInitialSync() {
+            try {
+                showAlert('Starting initial sync...', 'info');
+
+                const response = await fetch('/api/integration/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ locationId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showAlert(`Initial sync completed! Created ${data.tasksCreated} tasks.`, 'success');
+                    updateSyncStatus(new Date());
+                } else {
+                    showAlert('Initial sync failed.', 'error');
+                }
+            } catch (error) {
+                console.error('Initial sync failed:', error);
+                showAlert('Initial sync failed.', 'error');
+            }
+        }
+
+        // Test connection
+        async function testConnection() {
+            try {
+                const response = await fetch('/api/integration/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ locationId })
+                });
+
+                if (response.ok) {
+                    showAlert('Connection test successful!', 'success');
+                } else {
+                    showAlert('Connection test failed.', 'error');
+                }
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                showAlert('Connection test failed.', 'error');
+            }
+        }
+
+        // Disconnect integration
+        async function disconnectIntegration() {
+            if (!confirm('Are you sure you want to disconnect the integration?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/integration/disconnect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ locationId })
+                });
+
+                if (response.ok) {
+                    showAlert('Integration disconnected successfully.', 'success');
+                    updateConnectionStatus(false);
+                } else {
+                    showAlert('Failed to disconnect integration.', 'error');
+                }
+            } catch (error) {
+                console.error('Disconnect failed:', error);
+                showAlert('Failed to disconnect integration.', 'error');
+            }
+        }
+
+        // Update sync status display
+        function updateSyncStatus(lastSync) {
+            const syncStatus = document.getElementById('syncStatus');
+            if (lastSync) {
+                syncStatus.textContent = `Last sync: ${lastSync.toLocaleString()}`;
+            } else {
+                syncStatus.textContent = 'Last sync: Never';
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert alert-${type}`;
+            alertElement.textContent = message;
+
+            alertContainer.appendChild(alertElement);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alertElement.remove();
+            }, 5000);
+        }
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden && isConnected) {
+                checkConnectionStatus();
+            }
+        });
+    </script>
+</body>
+
+</html>

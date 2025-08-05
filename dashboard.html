@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <h1>TaskManager</h1>
+            </div>
+
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
+                <li><a href="calendar.html">📅 Calendar View</a></li>
+                <li><a href="settings.html">⚙️ Settings</a></li>
+                <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="flex items-center">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="top-bar-filters desktop-filters">
+                        <button class="filter-btn active" data-filter="all">All Tasks</button>
+                        <button class="filter-btn" data-filter="my">My Tasks</button>
+                        <button class="filter-btn" data-filter="team">Team Tasks</button>
+                        <button class="filter-btn" data-filter="overdue">Overdue</button>
+                    </div>
+                </div>
+
+                <div class="user-profile">
+                    <span id="userName">Loading...</span>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="page-header">
+                    <h1 class="page-title">Daily Tasks</h1>
+                    <p class="page-subtitle" id="currentDate"></p>
+                </div>
+
+                <!-- Task Statistics -->
+                <div class="task-stats mb-6"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="stat-card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-600">Total Tasks</h3>
+                        <p class="text-2xl font-bold text-gray-800" id="totalTasks">0</p>
+                    </div>
+                    <div class="stat-card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-600">Completed</h3>
+                        <p class="text-2xl font-bold text-green-600" id="completedTasks">0</p>
+                    </div>
+                    <div class="stat-card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-600">In Progress</h3>
+                        <p class="text-2xl font-bold text-yellow-600" id="inProgressTasks">0</p>
+                    </div>
+                    <div class="stat-card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-600">Overdue</h3>
+                        <p class="text-2xl font-bold text-red-600" id="overdueTasks">0</p>
+                    </div>
+                </div>
+
+                <!-- Contacts Section -->
+                <div class="contacts-section mb-6">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-4">GoHighLevel Contacts</h3>
+                        <div id="contactsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Contacts will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="task-list">
+                    <div class="task-header">
+                        <h2 class="font-semibold">Today's Tasks</h2>
+                        <div class="flex items-center gap-2">
+                            <select id="sortBy" class="form-input" style="width: auto; padding: 0.5rem;"
+                                title="Sort tasks by">
+                                <option value="dueDate">Sort by Due Date</option>
+                                <option value="priority">Sort by Priority</option>
+                                <option value="status">Sort by Status</option>
+                                <option value="title">Sort by Title</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" onclick="addNewTask()">+ Add Task</button>
+                        </div>
+                    </div>
+
+                    <div id="taskContainer">
+                        <!-- Tasks will be dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div id="taskModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Task Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle" class="form-label">Task Title</label>
+                        <input type="text" id="taskTitle" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskDescription" class="form-label">Description</label>
+                        <textarea id="taskDescription" class="form-input" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskDueDate" class="form-label">Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskPriority" class="form-label">Priority</label>
+                        <select id="taskPriority" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskStatus" class="form-label">Status</label>
+                        <select id="taskStatus" class="form-input">
+                            <option value="incomplete">Incomplete</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="complete">Complete</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskContactId" class="form-label">Contact</label>
+                        <select id="taskContactId" class="form-input" required>
+                            <option value="">Select a contact...</option>
+                            <!-- Will be populated dynamically from GHL -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskOwner" class="form-label">Assigned To</label>
+                        <select id="taskOwner" class="form-input">
+                            <option value="Admin User">Admin User</option>
+                            <option value="John Doe">John Doe</option>
+                            <option value="Sarah Smith">Sarah Smith</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

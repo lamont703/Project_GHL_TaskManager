@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Task Manager</h1>
+                <p class="text-gray-600">Sign in to your account</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember" name="remember" class="mr-2">
+                        <label for="remember" class="text-sm text-gray-600">Remember me</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full mb-4">Sign In</button>
+
+                <div class="text-center">
+                    <a href="#" class="text-sm text-blue-600 hover:underline">Forgot your password?</a>
+                </div>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="text-center text-sm text-gray-600">
+                    <p>Demo Accounts:</p>
+                    <div class="mt-2 space-y-1">
+                        <div class="demo-account" data-email="admin@company.com" data-password="admin123">
+                            <strong>Admin:</strong> admin@company.com / admin123
+                        </div>
+                        <div class="demo-account" data-email="john@company.com" data-password="john123">
+                            <strong>John:</strong> john@company.com / john123
+                        </div>
+                        <div class="demo-account" data-email="sarah@company.com" data-password="sarah123">
+                            <strong>Sarah:</strong> sarah@company.com / sarah123
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Demo authentication
+            const validCredentials = [
+                { email: 'admin@company.com', password: 'admin123', name: 'Admin User', role: 'admin' },
+                { email: 'john@company.com', password: 'john123', name: 'John Doe', role: 'user' },
+                { email: 'sarah@company.com', password: 'sarah123', name: 'Sarah Smith', role: 'user' }
+            ];
+
+            const user = validCredentials.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                // Store user data in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('Invalid credentials. Please try again.');
+            }
+        });
+
+        // Add click handlers for demo accounts
+        document.querySelectorAll('.demo-account').forEach(account => {
+            account.style.cursor = 'pointer';
+            account.style.padding = '4px 8px';
+            account.style.margin = '2px 0';
+            account.style.borderRadius = '4px';
+            account.style.transition = 'background-color 0.2s';
+
+            account.addEventListener('click', function () {
+                document.getElementById('email').value = this.dataset.email;
+                document.getElementById('password').value = this.dataset.password;
+            });
+
+            account.addEventListener('mouseenter', function () {
+                this.style.backgroundColor = '#f1f5f9';
+            });
+
+            account.addEventListener('mouseleave', function () {
+                this.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+</body>
+
+</html>
