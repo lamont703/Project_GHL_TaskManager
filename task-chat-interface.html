@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager Chat Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .webhook-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .nav-link.logout {
+            background: rgba(220, 53, 69, 0.8);
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(220, 53, 69, 1);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.offline {
+            background: #f44336;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 30px 25px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.bot .message-avatar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .message-content {
+            background: white;
+            padding: 20px 25px;
+            border-radius: 20px;
+            max-width: 75%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message.user .message-time {
+            text-align: left;
+        }
+
+        .task-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-card.high-priority {
+            border-left-color: #f44336;
+            background: #fff5f5;
+        }
+
+        .task-card.overdue {
+            border-left-color: #ff9800;
+            background: #fff8e1;
+        }
+
+        .task-card.completed {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+            opacity: 0.8;
+        }
+
+        .task-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .task-action-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .task-action-btn.complete {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .task-action-btn.complete:hover {
+            background: #45a049;
+        }
+
+        .search-container {
+            background: white;
+            padding: 25px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 24px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+
+        .task-filters {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .task-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .no-tasks {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .no-tasks-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .export-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .export-btn:hover {
+            background: #218838;
+        }
+
+        .export-btn.csv {
+            background: #17a2b8;
+        }
+
+        .export-btn.csv:hover {
+            background: #138496;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .task-details {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .task-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-input-container {
+            padding: 25px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid #e9ecef;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+
+        .quick-action:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #f44336;
+        }
+
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .webhook-config {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 16px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+
+        .webhook-config h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .webhook-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+
+        .config-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .config-button:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                width: 98%;
+                height: 95vh;
+                border-radius: 15px;
+            }
+
+            .chat-header {
+                padding: 20px 15px;
+            }
+
+            .chat-header h1 {
+                font-size: 24px;
+            }
+
+            .chat-header p {
+                font-size: 14px;
+            }
+
+            .search-container {
+                padding: 20px 15px;
+            }
+
+            .search-input {
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+
+            .task-filters {
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .filter-btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+
+            .chat-messages {
+                padding: 20px 15px;
+            }
+
+            .message {
+                margin-bottom: 20px;
+                gap: 12px;
+            }
+
+            .message-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .message-content {
+                max-width: 85%;
+                padding: 16px 20px;
+            }
+
+            .task-card {
+                padding: 16px;
+                margin: 12px 0;
+            }
+
+            .chat-input-container {
+                padding: 20px 15px;
+            }
+
+            .chat-input-form {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .chat-input {
+                padding: 16px 20px;
+            }
+
+            .send-button {
+                padding: 16px 25px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .quick-actions {
+                gap: 10px;
+                margin-top: 15px;
+                justify-content: center;
+            }
+
+            .quick-action {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .webhook-config {
+                padding: 16px;
+                margin: 15px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🤖 Task Manager Chat</h1>
+            <p>Ask me about your tasks and I'll fetch them from the webhook</p>
+            <div class="webhook-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Online</span>
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+                <a href="calendar.html" class="nav-link">📅 Calendar</a>
+                <a href="settings.html" class="nav-link">⚙️ Settings</a>
+                <a href="login.html" class="nav-link logout" onclick="logout()">🚪 Logout</a>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input"
+                placeholder="🔍 Search tasks by title, description, or assignee...">
+            <div class="task-filters">
+                <div class="filter-btn active" data-filter="all">All</div>
+                <div class="filter-btn" data-filter="high-priority">High Priority</div>
+                <div class="filter-btn" data-filter="overdue">Overdue</div>
+                <div class="filter-btn" data-filter="this-week">This Week</div>
+                <div class="filter-btn" data-filter="incomplete">Incomplete</div>
+                <div class="filter-btn" data-filter="completed">Completed</div>
+            </div>
+
+            <div class="sort-controls" style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
+                <span style="font-size: 14px; color: #666;">Sort by:</span>
+                <select id="sortSelect" onchange="handleSortChange()"
+                    style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+                    aria-label="Sort tasks by">
+                    <option value="priority">Priority</option>
+                    <option value="dueDate">Due Date</option>
+                    <option value="createdAt">Created Date</option>
+                    <option value="assignee">Assignee</option>
+                    <option value="title">Title</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div>🚀 Welcome to your Task Manager Assistant!</div>
+                    <div style="margin-top: 10px;">
+                        I can help you with:
+                    </div>
+                    <div style="margin-top: 8px; padding-left: 15px;">
+                        📋 <strong>Task Retrieval:</strong> Get all your GHL tasks<br>
+                        🔍 <strong>Smart Search:</strong> Find tasks by title, description, or assignee<br>
+                        🎯 <strong>Priority Filtering:</strong> Focus on high-priority items<br>
+                        ⏰ <strong>Time Management:</strong> Check overdue and upcoming tasks<br>
+                        📊 <strong>Analytics:</strong> Get task statistics and insights
+                    </div>
+                    <div
+                        style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <strong>💡 Getting Started:</strong><br>
+                        1. Configure your webhook URL below<br>
+                        2. Ask me to "Show me all tasks"<br>
+                        3. Use the search bar and filters to find specific tasks<br>
+                        4. Export tasks as JSON or CSV when needed
+                    </div>
+                    <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+                        Ready to get started? Try asking: "Show me all tasks" or use the quick action buttons below!
+                    </div>
+                    <div class="message-time" id="botTime"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="webhook-config">
+                <h3>🔗 Webhook Configuration</h3>
+                <input type="text" id="webhookUrl" class="webhook-input"
+                    placeholder="Enter your webhook URL (e.g., https://your-domain.com/api/tasks)"
+                    value="https://n8n-service-3446.onrender.com/webhook/get-task">
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="config-button" onclick="saveWebhook()">Save Webhook</button>
+                    <button class="config-button" onclick="testWebhook()" style="background: #17a2b8;">Test
+                        Connection</button>
+                </div>
+            </div>
+
+            <form class="chat-input-form" id="chatForm">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Ask me about your tasks..."
+                    autocomplete="off">
+                <button type="submit" class="send-button" id="sendButton">
+                    <span id="buttonText">Send</span>
+                    <span id="buttonIcon">📤</span>
+                </button>
+            </form>
+
+            <div class="quick-actions">
+                <div class="quick-action" onclick="sendQuickMessage('Show me all tasks')">📋 All Tasks</div>
+                <div class="quick-action" onclick="sendQuickMessage('Show high priority tasks')">🔥 High Priority</div>
+                <div class="quick-action" onclick="sendQuickMessage('Show overdue tasks')">⏰ Overdue</div>
+                <div class="quick-action" onclick="sendQuickMessage('Get task statistics')">📊 Statistics</div>
+                <div class="quick-action" onclick="sendQuickMessage('Show tasks due this week')">📅 This Week</div>
+                <div class="quick-action" onclick="sendQuickMessage('Show incomplete tasks')">⏳ Incomplete</div>
+                <div class="quick-action" onclick="sendQuickMessage('Show completed tasks')">✅ Completed</div>
+                <div class="quick-action" onclick="createNewTask()" style="background: #28a745;">➕ New Task</div>
+                <div class="quick-action" onclick="clearSearchAndFilters()" style="background: #6c757d;">🔄 Clear
+                    Filters</div>
+                <div class="quick-action" onclick="showHelp()" style="background: #17a2b8;">❓ Help</div>
+                <div class="quick-action" onclick="testWebhookResponse()" style="background: #6c757d;">🧪 Test Response
+                </div>
+                <div class="quick-action" onclick="showDetailedAnalytics()" style="background: #9c27b0;">📈 Analytics
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the chat interface
+        let webhookUrl = localStorage.getItem('webhookUrl') || '';
+        let isOnline = false;
+        let allTasks = []; // Store all fetched tasks
+        let filteredTasks = []; // Store filtered tasks
+        let currentFilter = 'all'; // Current active filter
+        let searchQuery = ''; // Current search query
+
+        // Set initial time for bot message
+        document.getElementById('botTime').textContent = getCurrentTime();
+
+        // Load saved webhook URL
+        if (webhookUrl) {
+            document.getElementById('webhookUrl').value = webhookUrl;
+            checkWebhookStatus();
+        }
+
+        // Event listeners
+        document.getElementById('chatForm').addEventListener('submit', handleSubmit);
+        document.getElementById('chatInput').addEventListener('keypress', handleKeyPress);
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+
+        // Add filter button event listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', handleFilterClick);
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', handleKeyboardShortcuts);
+
+        // Add touch support for mobile
+        addTouchSupport();
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (message) {
+                sendMessage(message);
+                input.value = '';
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+            }
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('chatInput').value = message;
+            sendMessage(message);
+        }
+
+        function sendMessage(message) {
+            if (!webhookUrl) {
+                addMessage('Please configure your webhook URL first!', 'bot');
+                return;
+            }
+
+            // Add user message
+            addMessage(message, 'user');
+
+            // Show typing indicator
+            const typingId = addTypingIndicator();
+
+            // Process the message and get response
+            processMessage(message, typingId);
+        }
+
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const avatar = sender === 'user' ? '👤' : '🤖';
+            const avatarClass = sender === 'user' ? 'user' : 'bot';
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${avatarClass}">${avatar}</div>
+                <div class="message-content">
+                    <div>${content}</div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing-indicator';
+
+            typingDiv.innerHTML = `
+                <div class="message-avatar bot">🤖</div>
+                <div class="message-content">
+                    <div class="loading"></div>
+                    <div>Thinking...</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return 'typing-indicator';
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        async function processMessage(message, typingId) {
+            try {
+                // Simulate processing time
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                removeTypingIndicator();
+
+                // Determine what the user is asking for
+                const lowerMessage = message.toLowerCase();
+                let response = '';
+                let shouldFetchData = false;
+
+                // More comprehensive task request detection
+                if (lowerMessage.includes('all task') || lowerMessage.includes('show task') || lowerMessage.includes('get task') ||
+                    lowerMessage.includes('fetch task') || lowerMessage.includes('load task') || lowerMessage.includes('display task') ||
+                    lowerMessage.includes('ghl task') || lowerMessage.includes('go high level task') || lowerMessage.includes('pipeline task') ||
+                    lowerMessage.includes('my task') || lowerMessage.includes('list task') || lowerMessage.includes('see task')) {
+                    response = "I'll fetch all your GHL tasks for you!";
+                    shouldFetchData = true;
+                } else if (lowerMessage.includes('high priority') || lowerMessage.includes('priority') || lowerMessage.includes('urgent')) {
+                    response = "I'll get your high priority tasks!";
+                    shouldFetchData = true;
+                } else if (lowerMessage.includes('overdue') || lowerMessage.includes('late') || lowerMessage.includes('past due')) {
+                    response = "I'll check for any overdue tasks!";
+                    shouldFetchData = true;
+                } else if (lowerMessage.includes('statistic') || lowerMessage.includes('stats') || lowerMessage.includes('summary')) {
+                    response = "I'll get your task statistics!";
+                    shouldFetchData = true;
+                } else if (lowerMessage.includes('this week') || lowerMessage.includes('week') || lowerMessage.includes('upcoming')) {
+                    response = "I'll get tasks due this week!";
+                    shouldFetchData = true;
+                } else if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+                    response = "Hello! How can I help you with your tasks today?";
+                } else if (lowerMessage.includes('help') || lowerMessage.includes('what can you do')) {
+                    response = "I can help you with: getting all tasks, finding high priority tasks, checking overdue tasks, getting statistics, and finding tasks due this week. Just ask!";
+                } else {
+                    // If the message contains task-related keywords, assume they want tasks
+                    if (lowerMessage.includes('task') || lowerMessage.includes('ghl') || lowerMessage.includes('pipeline')) {
+                        response = "I'll fetch your tasks for you!";
+                        shouldFetchData = true;
+                    } else {
+                        response = "I'm not sure what you're asking for. Try asking me to show your tasks, get statistics, or check for overdue items!";
+                    }
+                }
+
+                addMessage(response, 'bot');
+
+                if (shouldFetchData) {
+                    await fetchTasksFromWebhook(message);
+                }
+
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage("Sorry, I encountered an error processing your request. Please try again.", 'bot');
+                console.error('Error processing message:', error);
+            }
+        }
+
+        async function fetchTasksFromWebhook(message) {
+            try {
+                // Show loading message
+                addMessage("🔍 Fetching data from your webhook...", 'bot');
+
+                // Determine the type of request and build appropriate parameters
+                const lowerMessage = message.toLowerCase();
+                let requestType = 'all';
+                let additionalParams = {};
+
+                if (lowerMessage.includes('high priority') || lowerMessage.includes('priority')) {
+                    requestType = 'priority';
+                    additionalParams = { priority: 'high' };
+                } else if (lowerMessage.includes('overdue') || lowerMessage.includes('late') || lowerMessage.includes('past due')) {
+                    requestType = 'overdue';
+                    additionalParams = { status: 'overdue' };
+                } else if (lowerMessage.includes('this week') || lowerMessage.includes('week') || lowerMessage.includes('upcoming')) {
+                    requestType = 'week';
+                    additionalParams = { timeframe: 'week' };
+                } else if (lowerMessage.includes('today') || lowerMessage.includes('today\'s')) {
+                    requestType = 'today';
+                    additionalParams = { timeframe: 'today' };
+                } else if (lowerMessage.includes('statistic') || lowerMessage.includes('stats') || lowerMessage.includes('summary')) {
+                    requestType = 'stats';
+                    additionalParams = { type: 'statistics' };
+                } else if (lowerMessage.includes('incomplete') || lowerMessage.includes('pending')) {
+                    requestType = 'incomplete';
+                    additionalParams = { status: 'incomplete' };
+                } else if (lowerMessage.includes('complete') || lowerMessage.includes('done')) {
+                    requestType = 'complete';
+                    additionalParams = { status: 'complete' };
+                } else {
+                    requestType = 'all';
+                }
+
+                // Build query parameters for GET request
+                const params = new URLSearchParams({
+                    query: message,
+                    request_type: requestType,
+                    timestamp: new Date().toISOString(),
+                    source: 'chat-interface',
+                    ...additionalParams
+                });
+
+                console.log(`Sending request type: ${requestType} with params:`, Object.fromEntries(params));
+
+                // Make GET request to webhook
+                const response = await fetch(`${webhookUrl}?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Webhook endpoint not found. Please check the URL.');
+                    } else if (response.status === 500) {
+                        throw new Error('Webhook workflow error. The n8n workflow may need configuration.');
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                }
+
+                const data = await response.json();
+
+                // Process and display the response
+                displayTaskData(data, message, requestType);
+
+            } catch (error) {
+                console.error('Error fetching from webhook:', error);
+
+                // Provide more specific error messages
+                if (error.message.includes('Failed to fetch')) {
+                    addMessage("❌ Network error: Unable to reach the webhook. Please check:", 'bot');
+                    addMessage("• Your internet connection", 'bot');
+                    addMessage("• The webhook URL is correct", 'bot');
+                    addMessage("• The n8n service is running", 'bot');
+                } else if (error.message.includes('CORS')) {
+                    addMessage("❌ CORS error: The webhook doesn't allow browser requests.", 'bot');
+                    addMessage("This is a common issue with webhooks. Try using a different approach.", 'bot');
+                } else {
+                    addMessage(`❌ Error connecting to webhook: ${error.message}`, 'bot');
+                }
+
+                addMessage("💡 Tip: You can test the webhook directly with: curl 'https://n8n-service-3446.onrender.com/webhook/get-task?query=test'", 'bot');
+            }
+        }
+
+        function displayTaskData(data, originalMessage, requestType = 'all') {
+            console.log('Webhook response data:', data); // Debug logging
+            console.log('Request type:', requestType); // Debug logging
+
+            // Handle different response structures
+            let tasks = [];
+            let success = false;
+            let message = '';
+
+            // Check various possible response structures
+            if (data.success !== undefined) {
+                success = data.success;
+            } else if (data.code !== undefined && data.code === 0) {
+                success = false; // code 0 indicates error
+            } else {
+                success = true; // Assume success if no explicit success field
+            }
+
+            // Extract tasks from various possible locations
+            if (data.tasks && Array.isArray(data.tasks)) {
+                tasks = data.tasks;
+            } else if (data.data && Array.isArray(data.data)) {
+                tasks = data.data;
+            } else if (data.opportunities && Array.isArray(data.opportunities)) {
+                // If opportunities contain tasks, extract them
+                data.opportunities.forEach(opp => {
+                    if (opp.tasks && Array.isArray(opp.tasks)) {
+                        tasks = tasks.concat(opp.tasks);
+                    }
+                });
+            } else if (Array.isArray(data)) {
+                // If the response is directly an array
+                tasks = data;
+            }
+
+            // Extract message
+            if (data.message) {
+                message = data.message;
+            }
+
+            // Enhanced task data processing and validation
+            if (success && tasks.length > 0) {
+                // Process and normalize task data
+                tasks = tasks.map(task => normalizeTaskData(task));
+
+                // Filter out invalid tasks
+                const validTasks = tasks.filter(task => task.title || task.name);
+
+                if (validTasks.length === 0) {
+                    addMessage("⚠️ No valid tasks found in the response. Tasks must have a title or name.", 'bot');
+                    addMessage(`🔍 Raw response: ${JSON.stringify(data, null, 2)}`, 'bot');
+                    return;
+                }
+
+                // Store all tasks globally for search and filtering
+                allTasks = validTasks;
+
+                // Show success message
+                addMessage(`✅ Successfully fetched ${validTasks.length} tasks from your webhook!`, 'bot');
+
+                // Show task statistics
+                const statsMessage = createTaskStatsMessage(validTasks);
+                addMessage(statsMessage, 'bot');
+
+                // Apply initial filtering and display
+                filterAndDisplayTasks();
+
+            } else if (success && tasks.length === 0) {
+                addMessage("✅ Request processed successfully, but no tasks found.", 'bot');
+                if (message) {
+                    addMessage(`ℹ️ ${message}`, 'bot');
+                }
+            } else {
+                // Handle error cases
+                if (message) {
+                    addMessage(`❌ Error: ${message}`, 'bot');
+                } else {
+                    addMessage("❌ Error: Unknown error occurred", 'bot');
+                }
+
+                // Show the raw response for debugging
+                addMessage(`🔍 Raw response: ${JSON.stringify(data, null, 2)}`, 'bot');
+            }
+        }
+
+        // Helper function to normalize task data from different sources
+        function normalizeTaskData(task) {
+            return {
+                id: task.id || task.taskId || task.opportunityId || Date.now().toString(),
+                title: task.title || task.name || task.taskTitle || 'Untitled Task',
+                description: task.description || task.details || task.taskDescription || task.notes || '',
+                dueDate: task.dueDate || task.due_date || task.date || task.due || task.deadline || '',
+                owner: task.owner || task.assignee || task.user || task.assignedTo || task.responsible || '',
+                priority: task.priority || task.priority_level || task.priorityLevel || task.importance || 'medium',
+                status: task.status || task.completion || task.state || task.progress || 'pending',
+                opportunityId: task.opportunityId || task.opportunity_id || task.pipelineId || '',
+                createdAt: task.createdAt || task.created_at || task.created || task.dateCreated || new Date().toISOString(),
+                updatedAt: task.updatedAt || task.updated_at || task.modified || task.lastModified || new Date().toISOString()
+            };
+        }
+
+        function createTaskStatsMessage(tasks) {
+            const total = tasks.length;
+            const highPriority = tasks.filter(task => {
+                const priority = (task.priority || '').toLowerCase();
+                return priority.includes('high') || priority.includes('urgent') || priority.includes('critical');
+            }).length;
+
+            const overdue = tasks.filter(task => {
+                const dueDate = task.dueDate;
+                if (!dueDate) return false;
+                const due = new Date(dueDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return due < today;
+            }).length;
+
+            const thisWeek = tasks.filter(task => {
+                const dueDate = task.dueDate;
+                if (!dueDate) return false;
+                const due = new Date(dueDate);
+                const today = new Date();
+                const weekFromNow = new Date(today);
+                weekFromNow.setDate(today.getDate() + 7);
+                return due >= today && due <= weekFromNow;
+            }).length;
+
+            const completed = tasks.filter(task => {
+                const status = (task.status || '').toLowerCase();
+                return status.includes('complete') || status.includes('done') || status.includes('finished');
+            }).length;
+
+            const pending = total - completed;
+
+            // Calculate completion percentage
+            const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            // Get priority distribution
+            const priorityStats = {};
+            tasks.forEach(task => {
+                const priority = (task.priority || 'unknown').toLowerCase();
+                priorityStats[priority] = (priorityStats[priority] || 0) + 1;
+            });
+
+            // Get assignee distribution
+            const assigneeStats = {};
+            tasks.forEach(task => {
+                const assignee = task.owner || 'Unassigned';
+                assigneeStats[assignee] = (assigneeStats[assignee] || 0) + 1;
+            });
+
+            return `
+                <div class="task-stats">
+                    <div>📊 Task Overview</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">${total}</div>
+                            <div class="stat-label">Total Tasks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${highPriority}</div>
+                            <div class="stat-label">High Priority</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${overdue}</div>
+                            <div class="stat-label">Overdue</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${thisWeek}</div>
+                            <div class="stat-label">Due This Week</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 18px; font-weight: bold; color: #4caf50;">${completionRate}%</div>
+                            <div style="font-size: 12px; opacity: 0.8;">Completion Rate</div>
+                            <div style="font-size: 14px; margin-top: 5px;">
+                                ${completed} completed / ${pending} pending
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 18px; font-weight: bold; color: #ff9800;">${overdue}</div>
+                            <div style="font-size: 12px; opacity: 0.8;">Overdue Tasks</div>
+                            <div style="font-size: 14px; margin-top: 5px;">
+                                ${overdue > 0 ? '⚠️ Action needed' : '✅ All caught up'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; font-size: 14px; opacity: 0.9;">
+                        💡 Use the search bar and filters above to find specific tasks!
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper function to filter tasks based on request type
+        function filterTasksByRequest(tasks, requestType, originalMessage) {
+            const lowerMessage = originalMessage.toLowerCase();
+
+            switch (requestType) {
+                case 'priority':
+                    return tasks.filter(task => {
+                        const priority = (task.priority || task.priority_level || '').toLowerCase();
+                        return priority.includes('high') || priority.includes('urgent') || priority.includes('critical');
+                    });
+
+                case 'overdue':
+                    return tasks.filter(task => {
+                        const dueDate = task.dueDate || task.due_date || task.date;
+                        if (!dueDate) return false;
+                        const due = new Date(dueDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return due < today;
+                    });
+
+                case 'week':
+                    return tasks.filter(task => {
+                        const dueDate = task.dueDate || task.due_date || task.date;
+                        if (!dueDate) return false;
+                        const due = new Date(dueDate);
+                        const today = new Date();
+                        const weekFromNow = new Date(today);
+                        weekFromNow.setDate(today.getDate() + 7);
+                        return due >= today && due <= weekFromNow;
+                    });
+
+                case 'today':
+                    return tasks.filter(task => {
+                        const dueDate = task.dueDate || task.due_date || task.date;
+                        if (!dueDate) return false;
+                        const due = new Date(dueDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(today.getDate() + 1);
+                        return due >= today && due < tomorrow;
+                    });
+
+                case 'incomplete':
+                    return tasks.filter(task => {
+                        const status = (task.status || task.completion || '').toLowerCase();
+                        return !status.includes('complete') && !status.includes('done') && !status.includes('finished');
+                    });
+
+                case 'complete':
+                    return tasks.filter(task => {
+                        const status = (task.status || task.completion || '').toLowerCase();
+                        return status.includes('complete') || status.includes('done') || status.includes('finished');
+                    });
+
+                case 'stats':
+                    // For statistics, return all tasks but they'll be processed differently
+                    return tasks;
+
+                default:
+                    // For 'all' or unknown types, return all tasks
+                    return tasks;
+            }
+        }
+
+        // Helper function to get context message based on request type
+        function getContextMessage(requestType, taskCount, originalMessage) {
+            switch (requestType) {
+                case 'priority':
+                    return `🔥 Found ${taskCount} high priority tasks:`;
+                case 'overdue':
+                    return `⏰ Found ${taskCount} overdue tasks:`;
+                case 'week':
+                    return `📅 Found ${taskCount} tasks due this week:`;
+                case 'today':
+                    return `📅 Found ${taskCount} tasks due today:`;
+                case 'incomplete':
+                    return `📋 Found ${taskCount} incomplete tasks:`;
+                case 'complete':
+                    return `✅ Found ${taskCount} completed tasks:`;
+                case 'stats':
+                    return `📊 Task Statistics (${taskCount} total tasks):`;
+                default:
+                    return `📋 Found ${taskCount} tasks:`;
+            }
+        }
+
+        function saveWebhook() {
+            const url = document.getElementById('webhookUrl').value.trim();
+            if (url) {
+                webhookUrl = url;
+                localStorage.setItem('webhookUrl', url);
+                addMessage("✅ Webhook URL saved successfully!", 'bot');
+                checkWebhookStatus();
+            } else {
+                addMessage("❌ Please enter a valid webhook URL", 'bot');
+            }
+        }
+
+        async function testWebhook() {
+            if (!webhookUrl) {
+                addMessage("❌ Please configure your webhook URL first!", 'bot');
+                return;
+            }
+
+            addMessage("🧪 Testing webhook connection...", 'bot');
+
+            try {
+                const params = new URLSearchParams({
+                    query: 'test',
+                    timestamp: new Date().toISOString(),
+                    source: 'test-connection'
+                });
+
+                const response = await fetch(`${webhookUrl}?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessage("✅ Webhook connection successful!", 'bot');
+                    addMessage(`📊 Response: ${JSON.stringify(data, null, 2)}`, 'bot');
+                } else {
+                    addMessage(`⚠️ Webhook responded with status: ${response.status}`, 'bot');
+                    const errorData = await response.text();
+                    addMessage(`📝 Response: ${errorData}`, 'bot');
+                }
+            } catch (error) {
+                addMessage(`❌ Webhook test failed: ${error.message}`, 'bot');
+                addMessage("💡 This might be a CORS issue. Try testing with curl instead.", 'bot');
+            }
+        }
+
+        async function checkWebhookStatus() {
+            if (!webhookUrl) {
+                updateStatus(false, 'No webhook configured');
+                return;
+            }
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                updateStatus(true, 'Online');
+            } catch (error) {
+                updateStatus(false, 'Offline');
+            }
+        }
+
+        async function testWebhookResponse() {
+            if (!webhookUrl) {
+                addMessage("❌ Please configure your webhook URL first!", 'bot');
+                return;
+            }
+
+            addMessage("🧪 Testing webhook response structure...", 'bot');
+
+            try {
+                const params = new URLSearchParams({
+                    query: 'test',
+                    timestamp: new Date().toISOString(),
+                    source: 'test-response'
+                });
+
+                const response = await fetch(`${webhookUrl}?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessage("✅ Webhook responded successfully!", 'bot');
+                    addMessage("🔍 Response structure:", 'bot');
+                    addMessage(`<pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>`, 'bot');
+
+                    // Try to process it as task data
+                    addMessage("📋 Processing as task data...", 'bot');
+                    displayTaskData(data, 'test');
+                } else {
+                    addMessage(`⚠️ Webhook responded with status: ${response.status}`, 'bot');
+                    const errorData = await response.text();
+                    addMessage(`📝 Response: ${errorData}`, 'bot');
+                }
+            } catch (error) {
+                addMessage(`❌ Webhook test failed: ${error.message}`, 'bot');
+            }
+        }
+
+        function updateStatus(online, text) {
+            isOnline = online;
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+
+            if (online) {
+                indicator.classList.remove('offline');
+                statusText.textContent = text;
+            } else {
+                indicator.classList.add('offline');
+                statusText.textContent = text;
+            }
+        }
+
+        // Enhanced search and filtering functions
+        function handleSearch(e) {
+            searchQuery = e.target.value.toLowerCase();
+
+            // Add search suggestions if user is typing
+            if (searchQuery.length > 2) {
+                showSearchSuggestions(searchQuery);
+            }
+
+            filterAndDisplayTasks();
+        }
+
+        // Show search suggestions based on current input
+        function showSearchSuggestions(query) {
+            if (allTasks.length === 0) return;
+
+            const suggestions = [];
+            const priorities = [...new Set(allTasks.map(task => task.priority).filter(Boolean))];
+            const assignees = [...new Set(allTasks.map(task => task.owner).filter(Boolean))];
+            const statuses = [...new Set(allTasks.map(task => task.status).filter(Boolean))];
+
+            // Check if query matches any priority
+            const matchingPriority = priorities.find(p => p.toLowerCase().includes(query));
+            if (matchingPriority) {
+                suggestions.push(`Priority: ${matchingPriority}`);
+            }
+
+            // Check if query matches any assignee
+            const matchingAssignee = assignees.find(a => a.toLowerCase().includes(query));
+            if (matchingAssignee) {
+                suggestions.push(`Assignee: ${matchingAssignee}`);
+            }
+
+            // Check if query matches any status
+            const matchingStatus = statuses.find(s => s.toLowerCase().includes(query));
+            if (matchingStatus) {
+                suggestions.push(`Status: ${matchingStatus}`);
+            }
+
+            // Show suggestions if any found
+            if (suggestions.length > 0) {
+                const suggestionMessage = document.getElementById('search-suggestion');
+                if (suggestionMessage) {
+                    suggestionMessage.remove();
+                }
+
+                const messagesContainer = document.getElementById('chatMessages');
+                const suggestionDiv = document.createElement('div');
+                suggestionDiv.className = 'message bot search-suggestion';
+                suggestionDiv.id = 'search-suggestion';
+
+                suggestionDiv.innerHTML = `
+                    <div class="message-avatar bot">💡</div>
+                    <div class="message-content">
+                        <div style="font-size: 14px; color: #666;">
+                            <strong>Search suggestions:</strong> ${suggestions.join(' | ')}
+                        </div>
+                    </div>
+                `;
+
+                messagesContainer.appendChild(suggestionDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        function handleFilterClick(e) {
+            // Remove active class from all filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            e.target.classList.add('active');
+            currentFilter = e.target.dataset.filter;
+            filterAndDisplayTasks();
+        }
+
+        function filterAndDisplayTasks() {
+            if (allTasks.length === 0) return;
+
+            // Apply search filter
+            let searchFiltered = allTasks;
+            if (searchQuery) {
+                searchFiltered = allTasks.filter(task => {
+                    const title = (task.title || '').toLowerCase();
+                    const description = (task.description || '').toLowerCase();
+                    const assignee = (task.owner || '').toLowerCase();
+                    return title.includes(searchQuery) || description.includes(searchQuery) || assignee.includes(searchQuery);
+                });
+            }
+
+            // Apply category filter
+            filteredTasks = filterTasksByCategory(searchFiltered, currentFilter);
+
+            // Apply sorting
+            const sortBy = document.getElementById('sortSelect').value;
+            filteredTasks = sortTasks(filteredTasks, sortBy);
+
+            // Display filtered tasks
+            displayFilteredTasks();
+        }
+
+        // Handle sort change
+        function handleSortChange() {
+            filterAndDisplayTasks();
+        }
+
+        function filterTasksByCategory(tasks, filter) {
+            switch (filter) {
+                case 'high-priority':
+                    return tasks.filter(task => {
+                        const priority = (task.priority || '').toLowerCase();
+                        return priority.includes('high') || priority.includes('urgent') || priority.includes('critical');
+                    });
+
+                case 'overdue':
+                    return tasks.filter(task => {
+                        const dueDate = task.dueDate;
+                        if (!dueDate) return false;
+                        const due = new Date(dueDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return due < today;
+                    });
+
+                case 'this-week':
+                    return tasks.filter(task => {
+                        const dueDate = task.dueDate;
+                        if (!dueDate) return false;
+                        const due = new Date(dueDate);
+                        const today = new Date();
+                        const weekFromNow = new Date(today);
+                        weekFromNow.setDate(today.getDate() + 7);
+                        return due >= today && due <= weekFromNow;
+                    });
+
+                case 'incomplete':
+                    return tasks.filter(task => {
+                        const status = (task.status || '').toLowerCase();
+                        return !status.includes('complete') && !status.includes('done') && !status.includes('finished');
+                    });
+
+                case 'completed':
+                    return tasks.filter(task => {
+                        const status = (task.status || '').toLowerCase();
+                        return status.includes('complete') || status.includes('done') || status.includes('finished');
+                    });
+
+                default:
+                    return tasks;
+            }
+        }
+
+        // Enhanced task sorting function
+        function sortTasks(tasks, sortBy = 'priority') {
+            const sortedTasks = [...tasks];
+
+            switch (sortBy) {
+                case 'priority':
+                    return sortedTasks.sort((a, b) => {
+                        const priorityOrder = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+                        const aPriority = priorityOrder[a.priority?.toLowerCase()] || 0;
+                        const bPriority = priorityOrder[b.priority?.toLowerCase()] || 0;
+                        return bPriority - aPriority;
+                    });
+
+                case 'dueDate':
+                    return sortedTasks.sort((a, b) => {
+                        const aDate = a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31');
+                        const bDate = b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31');
+                        return aDate - bDate;
+                    });
+
+                case 'createdAt':
+                    return sortedTasks.sort((a, b) => {
+                        const aDate = new Date(a.createdAt);
+                        const bDate = new Date(b.createdAt);
+                        return bDate - aDate;
+                    });
+
+                case 'assignee':
+                    return sortedTasks.sort((a, b) => {
+                        const aAssignee = (a.owner || 'Unassigned').toLowerCase();
+                        const bAssignee = (b.owner || 'Unassigned').toLowerCase();
+                        return aAssignee.localeCompare(bAssignee);
+                    });
+
+                case 'title':
+                    return sortedTasks.sort((a, b) => {
+                        const aTitle = (a.title || '').toLowerCase();
+                        const bTitle = (b.title || '').toLowerCase();
+                        return aTitle.localeCompare(bTitle);
+                    });
+
+                default:
+                    return sortedTasks;
+            }
+        }
+
+        function displayFilteredTasks() {
+            const messagesContainer = document.getElementById('chatMessages');
+
+            // Remove existing task display messages
+            const existingTasks = messagesContainer.querySelectorAll('.task-display-message');
+            existingTasks.forEach(task => task.remove());
+
+            if (filteredTasks.length === 0) {
+                const noTasksMessage = document.createElement('div');
+                noTasksMessage.className = 'message bot task-display-message';
+                noTasksMessage.innerHTML = `
+                    <div class="message-avatar bot">🤖</div>
+                    <div class="message-content">
+                        <div class="no-tasks">
+                            <div class="no-tasks-icon">🔍</div>
+                            <div>No tasks found matching your current search and filter criteria.</div>
+                            <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+                                Try adjusting your search terms or changing the filter.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(noTasksMessage);
+                return;
+            }
+
+            // Show filter summary
+            const summaryMessage = document.createElement('div');
+            summaryMessage.className = 'message bot task-display-message';
+            summaryMessage.innerHTML = `
+                <div class="message-avatar bot">🤖</div>
+                <div class="message-content">
+                    <div class="task-stats">
+                        <div>📋 Task Results</div>
+                        <div style="margin-top: 10px; font-size: 14px; opacity: 0.9;">
+                            Showing ${filteredTasks.length} of ${allTasks.length} total tasks
+                        </div>
+                        <div class="export-actions">
+                            <button class="export-btn" onclick="exportTasks('json')">📊 Export JSON</button>
+                            <button class="export-btn csv" onclick="exportTasks('csv')">📄 Export CSV</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(summaryMessage);
+
+            // Display each filtered task
+            filteredTasks.forEach((task, index) => {
+                const taskMessage = document.createElement('div');
+                taskMessage.className = 'message bot task-display-message';
+
+                // Determine task card class based on properties
+                let cardClass = 'task-card';
+                if (task.priority && task.priority.toLowerCase().includes('high')) {
+                    cardClass += ' high-priority';
+                }
+                if (task.dueDate && new Date(task.dueDate) < new Date()) {
+                    cardClass += ' overdue';
+                }
+                if (task.status && task.status.toLowerCase().includes('complete')) {
+                    cardClass += ' completed';
+                }
+
+                taskMessage.innerHTML = `
+                    <div class="message-avatar bot">🤖</div>
+                    <div class="message-content">
+                        <div class="${cardClass}">
+                                                    <div class="task-actions">
+                            <button class="task-action-btn" onclick="editTask(${index})" title="Edit Task">✏️</button>
+                            <button class="task-action-btn complete" onclick="completeTask(${index})" title="Mark Complete">✓</button>
+                            <button class="task-action-btn" onclick="deleteTask(${index})" title="Delete Task" style="background: #dc3545; color: white; border-color: #dc3545;">🗑️</button>
+                        </div>
+                            <div class="task-title">${task.title || task.name || 'Untitled Task'}</div>
+                            <div class="task-details">${task.description || task.details || 'No description'}</div>
+                            <div class="task-meta">
+                                <span>📅 ${task.dueDate || task.due_date || task.date || 'No due date'}</span>
+                                <span>👤 ${task.owner || task.assignee || task.user || 'Unassigned'}</span>
+                                <span>🎯 ${task.priority || task.priority_level || 'No priority'}</span>
+                                ${task.opportunityId ? `<span>💼 ${task.opportunityId}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(taskMessage);
+            });
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Task action functions
+        function editTask(index) {
+            const task = filteredTasks[index];
+
+            // Create a more sophisticated edit form
+            const editForm = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 2px solid #667eea;">
+                    <h4 style="margin-bottom: 15px; color: #667eea;">✏️ Edit Task</h4>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Title:</label>
+                        <input type="text" id="editTitle" value="${task.title || task.name || ''}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Description:</label>
+                        <textarea id="editDescription" rows="3" 
+                                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">${task.description || task.details || ''}</textarea>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Due Date:</label>
+                        <input type="date" id="editDueDate" value="${task.dueDate || task.due_date || task.date || ''}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Priority:</label>
+                        <select id="editPriority" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="low" ${(task.priority || task.priority_level || '').toLowerCase().includes('low') ? 'selected' : ''}>Low</option>
+                            <option value="medium" ${(task.priority || task.priority_level || '').toLowerCase().includes('medium') ? 'selected' : ''}>Medium</option>
+                            <option value="high" ${(task.priority || task.priority_level || '').toLowerCase().includes('high') ? 'selected' : ''}>High</option>
+                            <option value="urgent" ${(task.priority || task.priority_level || '').toLowerCase().includes('urgent') ? 'selected' : ''}>Urgent</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="cancelEdit()" style="padding: 8px 16px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Cancel</button>
+                        <button onclick="saveTaskEdit(${index})" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
+                    </div>
+                </div>
+            `;
+
+            addMessage(editForm, 'bot');
+        }
+
+        function saveTaskEdit(index) {
+            const task = filteredTasks[index];
+            const newTitle = document.getElementById('editTitle').value.trim();
+            const newDescription = document.getElementById('editDescription').value.trim();
+            const newDueDate = document.getElementById('editDueDate').value;
+            const newPriority = document.getElementById('editPriority').value;
+
+            if (!newTitle) {
+                alert('Task title is required!');
+                return;
+            }
+
+            // Update task data
+            task.title = newTitle;
+            task.description = newDescription;
+            task.dueDate = newDueDate;
+            task.priority = newPriority;
+
+            // Here you would typically send an update to your webhook
+            addMessage(`✅ Task updated successfully!`, 'bot');
+
+            // Remove the edit form and refresh display
+            const messagesContainer = document.getElementById('chatMessages');
+            const lastMessage = messagesContainer.lastElementChild;
+            if (lastMessage) {
+                lastMessage.remove();
+            }
+
+            filterAndDisplayTasks();
+        }
+
+        function cancelEdit() {
+            // Remove the edit form
+            const messagesContainer = document.getElementById('chatMessages');
+            const lastMessage = messagesContainer.lastElementChild;
+            if (lastMessage) {
+                lastMessage.remove();
+            }
+            addMessage("❌ Task edit cancelled.", 'bot');
+        }
+
+        function completeTask(index) {
+            const task = filteredTasks[index];
+            if (confirm(`Mark task "${task.title || task.name}" as complete?`)) {
+                // Here you would typically send an update to your webhook
+                addMessage(`✅ Task "${task.title || task.name}" marked as complete!`, 'bot');
+                // Update local task data
+                task.status = 'completed';
+                // Refresh display
+                filterAndDisplayTasks();
+            }
+        }
+
+        // New function to create a new task
+        function createNewTask() {
+            const createForm = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 2px solid #28a745;">
+                    <h4 style="margin-bottom: 15px; color: #28a745;">➕ Create New Task</h4>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Title:</label>
+                        <input type="text" id="newTaskTitle" placeholder="Enter task title" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Description:</label>
+                        <textarea id="newTaskDescription" rows="3" placeholder="Enter task description" 
+                                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Due Date:</label>
+                        <input type="date" id="newTaskDueDate" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Priority:</label>
+                        <select id="newTaskPriority" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Assignee:</label>
+                        <input type="text" id="newTaskAssignee" placeholder="Enter assignee name" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="cancelCreateTask()" style="padding: 8px 16px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Cancel</button>
+                        <button onclick="saveNewTask()" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Task</button>
+                    </div>
+                </div>
+            `;
+
+            addMessage(createForm, 'bot');
+        }
+
+        function saveNewTask() {
+            const title = document.getElementById('newTaskTitle').value.trim();
+            const description = document.getElementById('newTaskDescription').value.trim();
+            const dueDate = document.getElementById('newTaskDueDate').value;
+            const priority = document.getElementById('newTaskPriority').value;
+            const assignee = document.getElementById('newTaskAssignee').value.trim();
+
+            if (!title) {
+                alert('Task title is required!');
+                return;
+            }
+
+            // Create new task object
+            const newTask = {
+                id: Date.now().toString(), // Generate temporary ID
+                title: title,
+                description: description,
+                dueDate: dueDate,
+                priority: priority,
+                owner: assignee,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            // Add to all tasks and filtered tasks
+            allTasks.unshift(newTask); // Add to beginning
+            filteredTasks.unshift(newTask);
+
+            // Here you would typically send the new task to your webhook
+            addMessage(`✅ New task "${title}" created successfully!`, 'bot');
+
+            // Remove the create form and refresh display
+            const messagesContainer = document.getElementById('chatMessages');
+            const lastMessage = messagesContainer.lastElementChild;
+            if (lastMessage) {
+                lastMessage.remove();
+            }
+
+            filterAndDisplayTasks();
+        }
+
+        function cancelCreateTask() {
+            // Remove the create form
+            const messagesContainer = document.getElementById('chatMessages');
+            const lastMessage = messagesContainer.lastElementChild;
+            if (lastMessage) {
+                lastMessage.remove();
+            }
+            addMessage("❌ Task creation cancelled.", 'bot');
+        }
+
+        // Enhanced task deletion with confirmation
+        function deleteTask(index) {
+            const task = filteredTasks[index];
+            if (confirm(`Are you sure you want to delete task "${task.title || task.name}"? This action cannot be undone.`)) {
+                // Remove from arrays
+                const taskId = task.id;
+                allTasks = allTasks.filter(t => t.id !== taskId);
+                filteredTasks = filteredTasks.filter(t => t.id !== taskId);
+
+                // Here you would typically send a delete request to your webhook
+                addMessage(`🗑️ Task "${task.title || task.name}" deleted successfully!`, 'bot');
+
+                // Refresh display
+                filterAndDisplayTasks();
+            }
+        }
+
+        // Export functions
+        function exportTasks(format) {
+            if (filteredTasks.length === 0) {
+                addMessage('❌ No tasks to export', 'bot');
+                return;
+            }
+
+            try {
+                if (format === 'json') {
+                    const dataStr = JSON.stringify(filteredTasks, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    downloadFile(dataBlob, `tasks_${currentFilter}_${new Date().toISOString().split('T')[0]}.json`);
+                } else if (format === 'csv') {
+                    const csvContent = convertToCSV(filteredTasks);
+                    const dataBlob = new Blob([csvContent], { type: 'text/csv' });
+                    downloadFile(dataBlob, `tasks_${currentFilter}_${new Date().toISOString().split('T')[0]}.csv`);
+                }
+                addMessage(`📊 Tasks exported successfully as ${format.toUpperCase()}!`, 'bot');
+            } catch (error) {
+                addMessage(`❌ Export failed: ${error.message}`, 'bot');
+            }
+        }
+
+        function convertToCSV(tasks) {
+            const headers = ['Title', 'Description', 'Due Date', 'Assignee', 'Priority', 'Status', 'Opportunity ID'];
+            const rows = tasks.map(task => [
+                task.title || task.name || '',
+                task.description || task.details || '',
+                task.dueDate || task.due_date || task.date || '',
+                task.owner || task.assignee || task.user || '',
+                task.priority || task.priority_level || '',
+                task.status || task.completion || '',
+                task.opportunityId || ''
+            ]);
+
+            return [headers, ...rows].map(row =>
+                row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+        }
+
+        function downloadFile(blob, filename) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function clearSearchAndFilters() {
+            // Clear search input
+            document.getElementById('searchInput').value = '';
+            searchQuery = '';
+
+            // Reset filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+            currentFilter = 'all';
+
+            // Refresh display
+            filterAndDisplayTasks();
+
+            addMessage("🔄 Search and filters cleared! Showing all tasks.", 'bot');
+        }
+
+        // Add search suggestions
+        function addSearchSuggestions() {
+            if (allTasks.length === 0) return;
+
+            const suggestions = [];
+            const priorities = [...new Set(allTasks.map(task => task.priority || task.priority_level).filter(Boolean))];
+            const assignees = [...new Set(allTasks.map(task => task.owner || task.assignee || task.user).filter(Boolean))];
+
+            if (priorities.length > 0) {
+                suggestions.push(`Try searching by priority: ${priorities.slice(0, 3).join(', ')}`);
+            }
+            if (assignees.length > 0) {
+                suggestions.push(`Try searching by assignee: ${assignees.slice(0, 3).join(', ')}`);
+            }
+
+            if (suggestions.length > 0) {
+                addMessage(`💡 Search Tips: ${suggestions.join(' | ')}`, 'bot');
+            }
+        }
+
+        // Keyboard shortcuts
+        function handleKeyboardShortcuts(e) {
+            // Ctrl/Cmd + K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+
+            // Ctrl/Cmd + L to focus chat input
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                document.getElementById('chatInput').focus();
+            }
+
+            // Escape to clear search
+            if (e.key === 'Escape') {
+                document.getElementById('searchInput').value = '';
+                searchQuery = '';
+                filterAndDisplayTasks();
+            }
+        }
+
+        // Touch support for mobile
+        function addTouchSupport() {
+            // Add touch feedback for buttons
+            const buttons = document.querySelectorAll('.quick-action, .filter-btn, .task-action-btn');
+            buttons.forEach(button => {
+                button.addEventListener('touchstart', function () {
+                    this.style.transform = 'scale(0.95)';
+                });
+
+                button.addEventListener('touchend', function () {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Add swipe support for mobile
+            let startX = 0;
+            let startY = 0;
+
+            document.addEventListener('touchstart', function (e) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchend', function (e) {
+                const endX = e.changedTouches[0].clientX;
+                const endY = e.changedTouches[0].clientY;
+                const diffX = startX - endX;
+                const diffY = startY - endY;
+
+                // Swipe left/right to change filters
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                    const filters = document.querySelectorAll('.filter-btn');
+                    const currentIndex = Array.from(filters).findIndex(btn => btn.classList.contains('active'));
+
+                    if (diffX > 0 && currentIndex < filters.length - 1) {
+                        // Swipe left - next filter
+                        filters[currentIndex + 1].click();
+                    } else if (diffX < 0 && currentIndex > 0) {
+                        // Swipe right - previous filter
+                        filters[currentIndex - 1].click();
+                    }
+                }
+            });
+        }
+
+        // Help system
+        function showHelp() {
+            const helpMessage = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border-left: 4px solid #17a2b8;">
+                    <h3 style="margin-bottom: 15px; color: #17a2b8;">❓ Help & Keyboard Shortcuts</h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #333; margin-bottom: 10px;">⌨️ Keyboard Shortcuts:</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                            <div><strong>Ctrl/Cmd + K:</strong> Focus search bar</div>
+                            <div><strong>Ctrl/Cmd + L:</strong> Focus chat input</div>
+                            <div><strong>Escape:</strong> Clear search</div>
+                            <div><strong>Enter:</strong> Send message</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #333; margin-bottom: 10px;">📱 Mobile Features:</h4>
+                        <div style="font-size: 14px;">
+                            <div>• Swipe left/right on filters to navigate</div>
+                            <div>• Touch feedback on all interactive elements</div>
+                            <div>• Responsive design for all screen sizes</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #333; margin-bottom: 10px;">🔍 Search & Filter Tips:</h4>
+                        <div style="font-size: 14px;">
+                            <div>• Search by task title, description, or assignee</div>
+                            <div>• Use filter buttons for quick categorization</div>
+                            <div>• Combine search and filters for precise results</div>
+                            <div>• Export filtered results as JSON or CSV</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #333; margin-bottom: 10px;">💡 Quick Actions:</h4>
+                        <div style="font-size: 14px;">
+                            <div>• Use quick action buttons for common queries</div>
+                            <div>• Test webhook connection before fetching tasks</div>
+                            <div>• Clear filters to reset to all tasks view</div>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 12px; opacity: 0.8; text-align: center; margin-top: 15px;">
+                        💡 Tip: Start by asking "Show me all tasks" to get started!
+                    </div>
+                </div>
+            `;
+
+            addMessage(helpMessage, 'bot');
+        }
+
+        // Detailed analytics function
+        function showDetailedAnalytics() {
+            if (allTasks.length === 0) {
+                addMessage("❌ No tasks available for analytics. Please fetch some tasks first!", 'bot');
+                return;
+            }
+
+            const analytics = generateDetailedAnalytics(allTasks);
+            const analyticsMessage = `
+                <div style="background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); color: white; padding: 25px; border-radius: 16px;">
+                    <h3 style="margin-bottom: 20px; text-align: center;">📈 Detailed Task Analytics</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                            <div style="font-size: 24px; font-weight: bold;">${analytics.totalTasks}</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Total Tasks</div>
+                        </div>
+                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                            <div style="font-size: 24px; font-weight: bold;">${analytics.completionRate}%</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Completion Rate</div>
+                        </div>
+                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                            <div style="font-size: 24px; font-weight: bold;">${analytics.overdueTasks}</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Overdue Tasks</div>
+                        </div>
+                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                            <div style="font-size: 24px; font-weight: bold;">${analytics.thisWeekTasks}</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Due This Week</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="margin-bottom: 15px; text-align: center;">🎯 Priority Distribution</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;">
+                            ${Object.entries(analytics.priorityDistribution).map(([priority, count]) => `
+                                <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 18px; font-weight: bold;">${count}</div>
+                                    <div style="font-size: 12px; opacity: 0.9; text-transform: capitalize;">${priority}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="margin-bottom: 15px; text-align: center;">👥 Top Assignees</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                            ${analytics.topAssignees.slice(0, 6).map(assignee => `
+                                <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 18px; font-weight: bold;">${assignee.count}</div>
+                                    <div style="font-size: 12px; opacity: 0.9;">${assignee.name}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; font-size: 14px; opacity: 0.9;">
+                        💡 Use filters and search to dive deeper into specific task categories!
+                    </div>
+                </div>
+            `;
+
+            addMessage(analyticsMessage, 'bot');
+        }
+
+        // Generate detailed analytics data
+        function generateDetailedAnalytics(tasks) {
+            const totalTasks = tasks.length;
+            const completed = tasks.filter(task => {
+                const status = (task.status || '').toLowerCase();
+                return status.includes('complete') || status.includes('done') || status.includes('finished');
+            }).length;
+
+            const completionRate = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
+
+            const overdue = tasks.filter(task => {
+                const dueDate = task.dueDate;
+                if (!dueDate) return false;
+                const due = new Date(dueDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return due < today;
+            }).length;
+
+            const thisWeek = tasks.filter(task => {
+                const dueDate = task.dueDate;
+                if (!dueDate) return false;
+                const due = new Date(dueDate);
+                const today = new Date();
+                const weekFromNow = new Date(today);
+                weekFromNow.setDate(today.getDate() + 7);
+                return due >= today && due <= weekFromNow;
+            }).length;
+
+            // Priority distribution
+            const priorityDistribution = {};
+            tasks.forEach(task => {
+                const priority = (task.priority || 'unknown').toLowerCase();
+                priorityDistribution[priority] = (priorityDistribution[priority] || 0) + 1;
+            });
+
+            // Assignee distribution
+            const assigneeCounts = {};
+            tasks.forEach(task => {
+                const assignee = task.owner || 'Unassigned';
+                assigneeCounts[assignee] = (assigneeCounts[assignee] || 0) + 1;
+            });
+
+            const topAssignees = Object.entries(assigneeCounts)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count);
+
+            return {
+                totalTasks,
+                completionRate,
+                overdueTasks: overdue,
+                thisWeekTasks: thisWeek,
+                priorityDistribution,
+                topAssignees
+            };
+        }
+
+        // Test webhook connection on page load
+        if (webhookUrl) {
+            setTimeout(checkWebhookStatus, 1000);
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -19,8 +19,9 @@
             <ul class="sidebar-nav">
                 <li><a href="dashboard.html">📊 Dashboard</a></li>
                 <li><a href="calendar.html" class="active">📅 Calendar View</a></li>
+                <li><a href="task-chat-interface.html">🤖 AI Assistant</a></li>
                 <li><a href="settings.html">⚙️ Settings</a></li>
-                <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+                <li><a href="login.html" onclick="logout()">🚪 Logout</a></li>
             </ul>
         </div>
 
@@ -88,6 +89,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Task Detail Modal (reused from dashboard) -->
     <div id="taskModal" class="modal hidden">
@@ -228,21 +232,19 @@
             const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
 
             if (!isCurrentMonth) {
-                dayElement.style.opacity = '0.3';
+                dayElement.classList.add('other-month');
             }
 
             if (isToday) {
-                dayElement.style.backgroundColor = '#eff6ff';
-                dayElement.style.borderLeft = '4px solid #2563eb';
+                dayElement.classList.add('today');
             }
 
             if (isSelected) {
-                dayElement.style.backgroundColor = '#f0f9ff';
-                dayElement.style.borderLeft = '4px solid #0ea5e9';
+                dayElement.classList.add('selected');
             }
 
             dayElement.innerHTML = `
-                <div class="calendar-day-header">${date.getDate()}</div>
+                <div class="calendar-day-number">${date.getDate()}</div>
                 <div class="calendar-day-tasks" id="tasks-${date.toISOString().split('T')[0]}"></div>
             `;
 
@@ -252,9 +254,15 @@
 
             dayTasks.forEach(task => {
                 const taskElement = document.createElement('div');
-                taskElement.className = 'calendar-task';
+                taskElement.className = `calendar-task ${task.priority}-priority`;
+
+                // Add overdue class if task is overdue
+                if (new Date(task.dueDate) < new Date() && task.status !== 'complete') {
+                    taskElement.classList.add('overdue');
+                }
+
                 taskElement.textContent = task.title;
-                taskElement.style.backgroundColor = getPriorityColor(task.priority);
+                taskElement.title = `${task.title} - ${task.owner} (${task.priority} priority)`;
                 taskElement.addEventListener('click', (e) => {
                     e.stopPropagation();
                     editTask(task.id);

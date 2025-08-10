@@ -19,8 +19,9 @@
             <ul class="sidebar-nav">
                 <li><a href="dashboard.html">📊 Dashboard</a></li>
                 <li><a href="calendar.html">📅 Calendar View</a></li>
+                <li><a href="task-chat-interface.html">🤖 AI Assistant</a></li>
                 <li><a href="settings.html" class="active">⚙️ Settings</a></li>
-                <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+                <li><a href="login.html" onclick="logout()">🚪 Logout</a></li>
             </ul>
         </div>
 
@@ -300,8 +301,9 @@
 
                                 <div>
                                     <h3 class="font-semibold mb-3">Import Data</h3>
+                                    <label for="importFile" class="sr-only">Import Data File</label>
                                     <input type="file" id="importFile" accept=".json,.csv" class="form-input"
-                                        onchange="importTasks()">
+                                        onchange="importTasks()" title="Select a JSON or CSV file to import">
                                 </div>
 
                                 <div>

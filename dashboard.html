@@ -19,8 +19,9 @@
             <ul class="sidebar-nav">
                 <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
                 <li><a href="calendar.html">📅 Calendar View</a></li>
+                <li><a href="task-chat-interface.html">🤖 AI Assistant</a></li>
                 <li><a href="settings.html">⚙️ Settings</a></li>
-                <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+                <li><a href="login.html" onclick="logout()">🚪 Logout</a></li>
             </ul>
         </div>
 
@@ -31,10 +32,14 @@
                 <div class="flex items-center">
                     <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                     <div class="top-bar-filters desktop-filters">
-                        <button class="filter-btn active" data-filter="all">All Tasks</button>
-                        <button class="filter-btn" data-filter="my">My Tasks</button>
-                        <button class="filter-btn" data-filter="team">Team Tasks</button>
-                        <button class="filter-btn" data-filter="overdue">Overdue</button>
+                        <button class="filter-btn active" data-filter="morning" onclick="switchToMorningView()">🌅
+                            Morning View</button>
+                        <button class="filter-btn" data-filter="all" onclick="switchToAllTasksView()">📋 All
+                            Tasks</button>
+                        <button class="filter-btn" data-filter="my" onclick="switchToMyTasksView()">👤 My Tasks</button>
+                        <button class="filter-btn" data-filter="team" onclick="switchToTeamView()">👥 Team View</button>
+                        <button class="filter-btn" data-filter="overdue" onclick="switchToOverdueView()">⚠️
+                            Overdue</button>
                     </div>
                 </div>
 
@@ -47,64 +52,241 @@
             <!-- Content Area -->
             <div class="content-area">
                 <div class="page-header">
-                    <h1 class="page-title">Daily Tasks</h1>
+                    <h1 class="page-title" id="pageTitle">Morning Task Review</h1>
                     <p class="page-subtitle" id="currentDate"></p>
                 </div>
 
-                <!-- Task Statistics -->
-                <div class="task-stats mb-6"
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div class="stat-card bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-sm font-medium text-gray-600">Total Tasks</h3>
-                        <p class="text-2xl font-bold text-gray-800" id="totalTasks">0</p>
+                <!-- Morning View Content -->
+                <div id="morningView" class="morning-view">
+                    <!-- Daily Summary Cards -->
+                    <div class="daily-summary mb-6">
+                        <div class="summary-grid">
+                            <div class="summary-card priority-card">
+                                <div class="summary-icon">🔥</div>
+                                <div class="summary-content">
+                                    <h3>Today's Priorities</h3>
+                                    <p class="summary-number" id="todayPriorities">0</p>
+                                    <p class="summary-label">High Priority Tasks</p>
+                                </div>
+                            </div>
+                            <div class="summary-card urgent-card">
+                                <div class="summary-icon">⚡</div>
+                                <div class="summary-content">
+                                    <h3>Urgent Items</h3>
+                                    <p class="summary-number" id="urgentItems">0</p>
+                                    <p class="summary-label">Overdue & Critical</p>
+                                </div>
+                            </div>
+                            <div class="summary-card team-card">
+                                <div class="summary-icon">👥</div>
+                                <div class="summary-content">
+                                    <h3>Team Status</h3>
+                                    <p class="summary-number" id="teamActive">0</p>
+                                    <p class="summary-label">Active Members</p>
+                                </div>
+                            </div>
+                            <div class="summary-card progress-card">
+                                <div class="summary-icon">📈</div>
+                                <div class="summary-content">
+                                    <h3>Weekly Progress</h3>
+                                    <p class="summary-number" id="weeklyProgress">0%</p>
+                                    <p class="summary-label">Tasks Completed</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-sm font-medium text-gray-600">Completed</h3>
-                        <p class="text-2xl font-bold text-green-600" id="completedTasks">0</p>
-                    </div>
-                    <div class="stat-card bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-sm font-medium text-gray-600">In Progress</h3>
-                        <p class="text-2xl font-bold text-yellow-600" id="inProgressTasks">0</p>
-                    </div>
-                    <div class="stat-card bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-sm font-medium text-gray-600">Overdue</h3>
-                        <p class="text-2xl font-bold text-red-600" id="overdueTasks">0</p>
-                    </div>
-                </div>
 
-                <!-- Contacts Section -->
-                <div class="contacts-section mb-6">
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-lg font-semibold mb-4">GoHighLevel Contacts</h3>
-                        <div id="contactsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Contacts will be loaded here -->
+                    <!-- Priority Task Section -->
+                    <div class="priority-section mb-6">
+                        <div class="section-header">
+                            <h2>🎯 Today's Priority Tasks</h2>
+                            <p>Focus on these high-impact items first</p>
+                        </div>
+                        <div id="priorityTasks" class="priority-tasks-grid">
+                            <!-- Priority tasks will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Team Overview Section -->
+                    <div class="team-overview-section mb-6">
+                        <div class="section-header">
+                            <h2>👥 Team Overview</h2>
+                            <p>Quick status check for all team members</p>
+                        </div>
+                        <div id="teamOverview" class="team-overview-grid">
+                            <!-- Team overview will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Daily Goals Section -->
+                    <div class="daily-goals-section mb-6">
+                        <div class="section-header">
+                            <h2>🎯 Daily Goals</h2>
+                            <p>Set your focus areas for today</p>
+                        </div>
+                        <div class="goals-container">
+                            <div class="goal-input-section">
+                                <input type="text" id="goalInput" class="goal-input"
+                                    placeholder="What's your main focus today?" maxlength="100">
+                                <button class="btn btn-primary btn-sm" onclick="addDailyGoal()">Add Goal</button>
+                            </div>
+                            <div id="dailyGoals" class="daily-goals-list">
+                                <!-- Daily goals will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Morning Routine Section -->
+                    <div class="morning-routine-section mb-6">
+                        <div class="section-header">
+                            <h2>🌅 Morning Routine</h2>
+                            <p>Build consistent morning habits</p>
+                        </div>
+                        <div class="routine-container">
+                            <div class="routine-input-section">
+                                <input type="text" id="routineInput" class="routine-input"
+                                    placeholder="Add a morning routine item..." maxlength="100">
+                                <button class="btn btn-primary btn-sm" onclick="addMorningRoutineItem()">Add
+                                    Routine</button>
+                            </div>
+                            <div id="morningRoutine" class="morning-routine-list">
+                                <!-- Morning routine will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions-section mb-6">
+                        <div class="section-header">
+                            <h2>⚡ Quick Actions</h2>
+                            <p>Common morning tasks</p>
+                        </div>
+                        <div class="quick-actions-grid">
+                            <button class="quick-action-btn" onclick="refreshPipelineTasks()">
+                                <span class="action-icon">🔄</span>
+                                <span>Refresh Tasks</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="showTeamStandup()">
+                                <span class="action-icon">👥</span>
+                                <span>Team Standup</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="showWeeklyReview()">
+                                <span class="action-icon">📊</span>
+                                <span>Weekly Review</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="showMorningProductivityTips()">
+                                <span class="action-icon">💡</span>
+                                <span>Productivity Tips</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="addNewTask()">
+                                <span class="action-icon">➕</span>
+                                <span>Add Task</span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Task List -->
-                <div class="task-list">
-                    <div class="task-header">
-                        <h2 class="font-semibold">Today's Tasks</h2>
-                        <div class="flex items-center gap-2">
-                            <select id="sortBy" class="form-input" style="width: auto; padding: 0.5rem;"
-                                title="Sort tasks by">
-                                <option value="dueDate">Sort by Due Date</option>
-                                <option value="priority">Sort by Priority</option>
-                                <option value="status">Sort by Status</option>
-                                <option value="title">Sort by Title</option>
-                            </select>
-                            <button class="btn btn-primary btn-sm" onclick="addNewTask()">+ Add Task</button>
+                <!-- All Tasks View -->
+                <div id="allTasksView" class="view-section hidden">
+                    <div class="section-header">
+                        <h2>All Tasks</h2>
+                        <p>Manage and organize all your tasks</p>
+                    </div>
+
+                    <!-- Enhanced Task Filters -->
+                    <div class="task-filters">
+                        <div class="filter-row">
+                            <div class="search-box">
+                                <input type="text" id="taskSearch" class="search-input" placeholder="Search tasks...">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Priority</label>
+                                <select id="priorityFilter" class="filter-input">
+                                    <option value="">All Priorities</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Status</label>
+                                <select id="statusFilter" class="filter-input">
+                                    <option value="">All Statuses</option>
+                                    <option value="incomplete">Incomplete</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="complete">Complete</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Owner</label>
+                                <select id="ownerFilter" class="filter-input">
+                                    <option value="">All Owners</option>
+                                    <option value="Admin User">Admin User</option>
+                                    <option value="John Doe">John Doe</option>
+                                    <option value="Sarah Smith">Sarah Smith</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label class="filter-label">Due Date</label>
+                                <select id="dueDateFilter" class="filter-input">
+                                    <option value="">All Dates</option>
+                                    <option value="today">Today</option>
+                                    <option value="tomorrow">Tomorrow</option>
+                                    <option value="this-week">This Week</option>
+                                    <option value="overdue">Overdue</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                            <button class="btn btn-primary" onclick="exportFilteredTasks()">Export Filtered</button>
                         </div>
                     </div>
 
-                    <div id="taskContainer">
-                        <!-- Tasks will be dynamically loaded here -->
+                    <div class="task-list">
+                        <div class="task-header">
+                            <h2 class="font-semibold">Tasks by Assignee</h2>
+                            <p class="text-gray-600 text-sm">Tasks are automatically grouped by the user they are
+                                assigned
+                                to</p>
+                            <div class="flex items-center gap-2">
+                                <select id="sortBy" class="form-input" style="width: auto; padding: 0.5rem;"
+                                    title="Sort tasks by">
+                                    <option value="dueDate">Sort by Due Date</option>
+                                    <option value="priority">Sort by Priority</option>
+                                    <option value="status">Sort by Status</option>
+                                    <option value="title">Sort by Title</option>
+                                </select>
+                                <button class="btn btn-primary btn-sm" onclick="addNewTask()">+ Add Task</button>
+                                <button class="btn btn-secondary btn-sm" onclick="refreshPipelineTasks()"
+                                    title="Refresh pipeline tasks with rich context">
+                                    🔄 Refresh Pipeline
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Data Source Info -->
+                        <div id="dataSourceInfo" class="data-source-info" style="display: none;">
+                            <!-- Will be populated dynamically -->
+                        </div>
+
+                        <!-- User Task Groups -->
+                        <div id="userTaskGroups" class="user-task-groups">
+                            <!-- Tasks will be grouped by user here -->
+                        </div>
+
+                        <!-- Legacy Task Container (hidden by default) -->
+                        <div id="taskContainer" style="display: none;">
+                            <!-- Tasks will be dynamically loaded here -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Task Detail Modal -->
     <div id="taskModal" class="modal hidden">

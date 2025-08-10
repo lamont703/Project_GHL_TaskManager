@@ -6,6 +6,9 @@ require('dotenv').config();
 
 const app = express();
 
+// Import route modules
+const { router: pipelineRoutes, setTokenFunctions: setPipelineTokenFunctions } = require('./routes/pipelines');
+
 // Environment variables
 const CLIENT_ID = process.env.GHL_CLIENT_ID;
 const CLIENT_SECRET = process.env.GHL_CLIENT_SECRET;
@@ -13,6 +16,12 @@ const REDIRECT_URI = process.env.GHL_REDIRECT_URI;
 const WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET;
 
 app.use(express.json());
+
+// Register route modules
+app.use('/pipelines', pipelineRoutes);
+
+// Set token functions for pipeline routes
+setPipelineTokenFunctions({ getStoredTokens });
 
 // Enable CORS for all routes
 app.use((req, res, next) => {
@@ -74,6 +83,38 @@ app.get('/oauth/status', async (req, res) => {
         expires_at: tokens.expires_at,
         location_id: locationId,
         message: isExpired ? 'Token expired. Please re-authenticate.' : 'Authenticated successfully'
+    });
+});
+
+// OAuth tokens endpoint - returns the actual tokens for API calls
+app.get('/oauth/tokens', async (req, res) => {
+    const locationId = 'QLyYYRoOhCg65lKW9HDX';
+    const tokens = await getStoredTokens(locationId);
+    
+    if (!tokens) {
+        return res.status(401).json({
+            error: 'No tokens found. Please visit /oauth/init to authenticate.',
+            location_id: locationId
+        });
+    }
+    
+    // Check if token is expired
+    const now = new Date();
+    const isExpired = tokens.expires_at && new Date(tokens.expires_at) < now;
+    
+    if (isExpired) {
+        return res.status(401).json({
+            error: 'Token expired. Please re-authenticate.',
+            location_id: locationId
+        });
+    }
+    
+    // Return the tokens for API usage
+    res.json({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: tokens.expires_at,
+        location_id: locationId
     });
 });
 
@@ -398,6 +439,26 @@ async function storeTokens(locationId, accessToken, refreshToken, expiresIn) {
         refresh_token: refreshToken,
         expires_at: expirationTime
     });
+    
+    // Also save to file for isolated scripts
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const tokenFile = path.join(__dirname, '.tokens.json');
+        
+        const tokenData = {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires_in: expiresIn,
+            location_id: locationId,
+            expires_at: expirationTime.getTime()
+        };
+        
+        fs.writeFileSync(tokenFile, JSON.stringify(tokenData, null, 2));
+        console.log('Tokens also saved to .tokens.json for isolated scripts');
+    } catch (error) {
+        console.log('Warning: Could not save tokens to file:', error.message);
+    }
 }
 
 async function getTokens(locationId) {
@@ -427,87 +488,8 @@ async function createTaskInYourSystem(task) {
 }
 
 // Test endpoints
-app.get('/contacts', async (req, res) => {
-    try {
-        const locationId = 'QLyYYRoOhCg65lKW9HDX'; // Your location ID
-        const tokens = await getStoredTokens(locationId);
-        
-        if (!tokens) {
-            return res.status(401).json({ error: 'No tokens found. Please re-authenticate.' });
-        }
-        
-        // Step 1: Get all pipelines to find the Software Development Pipeline ID
-        const pipelinesResponse = await axios.get('https://services.leadconnectorhq.com/opportunities/pipelines', {
-            headers: {
-                'Authorization': `Bearer ${tokens.access_token}`,
-                'Version': '2021-07-28'
-            },
-            params: {
-                locationId: locationId
-            }
-        });
-        
-        const softwarePipeline = pipelinesResponse.data.pipelines.find(
-            pipeline => pipeline.name === 'Software Development Pipeline'
-        );
-        
-        if (!softwarePipeline) {
-            return res.status(404).json({ error: 'Software Development Pipeline not found' });
-        }
-        
-        // Step 2: Get all opportunities from the Software Development Pipeline
-        const opportunitiesResponse = await axios.get('https://services.leadconnectorhq.com/opportunities/search', {
-            headers: {
-                'Authorization': `Bearer ${tokens.access_token}`,
-                'Version': '2021-07-28'
-            },
-            params: {
-                locationId: locationId,
-                pipelineId: softwarePipeline.id,
-                limit: 100
-            }
-        });
-        
-        // Step 3: Get unique contact IDs from opportunities
-        const contactIds = [...new Set(opportunitiesResponse.data.opportunities.map(opp => opp.contact.id))];
-        
-        // Step 4: Get contact details for each contact ID
-        const contactPromises = contactIds.map(async (contactId) => {
-            try {
-                const contactResponse = await axios.get(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${tokens.access_token}`,
-                        'Version': '2021-07-28'
-                    },
-                    params: {
-                        locationId: locationId
-                    }
-                });
-                return contactResponse.data.contact;
-            } catch (error) {
-                console.error(`Error fetching contact ${contactId}:`, error.response?.data || error.message);
-                return null;
-            }
-        });
-        
-        const contacts = (await Promise.all(contactPromises)).filter(contact => contact !== null);
-        
-        res.json({
-            success: true,
-            location_id: locationId,
-            contacts: contacts,
-            total: contacts.length,
-            pipeline: softwarePipeline.name
-        });
-        
-    } catch (error) {
-        console.error('Contacts error:', error.response?.data || error.message);
-        res.status(500).json({ 
-            error: 'Failed to fetch contacts',
-            details: error.response?.data || error.message 
-        });
-    }
-});
+// Note: The old /contacts endpoint has been replaced with /pipelines/:pipelineName/contacts
+// Use /pipelines/Software%20Development%20Pipeline/contacts for the same functionality
 
 app.get('/opportunities', async (req, res) => {
     try {
@@ -533,6 +515,72 @@ app.get('/opportunities', async (req, res) => {
             success: true,
             location_id: locationId,
             opportunities: opportunitiesResponse.data
+        });
+        
+    } catch (error) {
+        console.error('Opportunities error:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to fetch opportunities', details: error.response?.data || error.message });
+    }
+});
+
+app.get('/contacts', async (req, res) => {
+    try {
+        const locationId = 'QLyYYRoOhCg65lKW9HDX'; // Your location ID
+        const tokens = await getStoredTokens(locationId);
+        
+        if (!tokens) {
+            return res.status(401).json({ error: 'No tokens found. Please re-authenticate.' });
+        }
+        
+        const contactsResponse = await axios.get('https://services.leadconnectorhq.com/contacts/', {
+            headers: {
+                'Authorization': `Bearer ${tokens.access_token}`,
+                'Version': '2021-07-28'
+            },
+            params: {
+                locationId: locationId,
+                limit: 100 // Get up to 100 contacts
+            }
+        });
+        
+        res.json({
+            success: true,
+            location_id: locationId,
+            contacts: contactsResponse.data
+        });
+        
+    } catch (error) {
+        console.error('Contacts error:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to fetch contacts', details: error.response?.data || error.message });
+    }
+});
+
+app.get('/opportunities', async (req, res) => {
+    try {
+        const locationId = 'QLyYYRoOhCg65lKW9HDX'; // Your location ID
+        const tokens = await getStoredTokens(locationId);
+        
+        if (!tokens) {
+            return res.status(401).json({ error: 'No tokens found. Please re-authenticate.' });
+        }
+        
+        const opportunitiesResponse = await axios.get('https://services.leadconnectorhq.com/opportunities/', {
+            headers: {
+                'Authorization': `Bearer ${tokens.access_token}`,
+                'Version': '2021-07-28'
+            },
+            params: {
+                locationId: locationId,
+                limit: 100 // Get up to 100 opportunities
+            }
+        });
+        
+        res.json({
+            success: true,
+            location_id: locationId,
+            opportunities: opportunitiesResponse.data,
+            opportunities_count: opportunitiesResponse.data.length || 0,
+            source: 'opportunities_api'
         });
         
     } catch (error) {
@@ -701,8 +749,101 @@ app.get('/tasks', async (req, res) => {
             return res.status(401).json({ error: 'No tokens found. Please re-authenticate.' });
         }
         
-        // Try direct tasks endpoint first
+        // First try to get tasks from our target pipeline with rich opportunity context
         try {
+            console.log('Attempting to fetch tasks from target pipeline with rich context...');
+            
+            // Target pipeline configuration (matching your standalone script)
+            const TARGET_PIPELINE = {
+                name: 'Client Software Development Pipeline',
+                id: 'uR2CMkTiwqoUOYuf8oGR'
+            };
+            
+            // Search for opportunities with tasks in our target pipeline
+            const searchUrl = 'https://services.leadconnectorhq.com/opportunities/search';
+            const searchParams = {
+                location_id: locationId,
+                pipeline_id: TARGET_PIPELINE.id,
+                getTasks: true, // This is the key parameter to get tasks!
+                limit: 100, // Get up to 100 opportunities
+                status: 'all' // Get all statuses
+            };
+            
+            const searchResponse = await axios.get(searchUrl, {
+                params: searchParams,
+                headers: {
+                    'Authorization': `Bearer ${tokens.access_token}`,
+                    'Version': '2021-07-28',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const searchData = searchResponse.data;
+            const opportunities = searchData.opportunities || [];
+            
+            // Extract all tasks from opportunities with rich context
+            const allTasks = [];
+            const opportunitiesWithTasks = [];
+            
+            opportunities.forEach(opportunity => {
+                if (opportunity.tasks && Array.isArray(opportunity.tasks) && opportunity.tasks.length > 0) {
+                    // Add rich opportunity context to each task
+                    const tasksWithContext = opportunity.tasks.map(task => ({
+                        ...task,
+                        opportunity_id: opportunity.id,
+                        opportunity_title: opportunity.title || opportunity.name || 'Untitled',
+                        opportunity_status: opportunity.status,
+                        opportunity_stage: opportunity.stage || opportunity.stageName,
+                        opportunity_value: opportunity.value,
+                        pipeline_id: opportunity.pipelineId || opportunity.pipeline_id,
+                        // Additional metadata
+                        source: 'pipeline_opportunities_search',
+                        method: `Searched opportunities with tasks in pipeline: ${TARGET_PIPELINE.name}`
+                    }));
+                    
+                    allTasks.push(...tasksWithContext);
+                    opportunitiesWithTasks.push({
+                        opportunity: opportunity,
+                        tasks: opportunity.tasks,
+                        task_count: opportunity.tasks.length
+                    });
+                }
+            });
+            
+            if (allTasks.length > 0) {
+                console.log(`✅ Found ${opportunities.length} opportunities in target pipeline`);
+                console.log(`📋 Found ${allTasks.length} total tasks across opportunities`);
+                console.log(`🎯 Opportunities with tasks: ${opportunitiesWithTasks.length}`);
+                
+                return res.json({
+                    success: true,
+                    location_id: locationId,
+                    pipeline_id: TARGET_PIPELINE.id,
+                    pipeline_name: TARGET_PIPELINE.name,
+                    opportunities: opportunities,
+                    opportunities_count: opportunities.length,
+                    tasks: allTasks,
+                    tasks_count: allTasks.length,
+                    opportunities_with_tasks: opportunitiesWithTasks,
+                    source: 'pipeline_opportunities_search',
+                    method: `Searched opportunities with tasks in pipeline: ${TARGET_PIPELINE.name}`,
+                    search_metadata: {
+                        endpoint: 'opportunities/search',
+                        pipeline_filter: TARGET_PIPELINE.id,
+                        getTasks: true,
+                        status_filter: 'all',
+                        limit: 100
+                    }
+                });
+            }
+            
+        } catch (pipelineError) {
+            console.log('Pipeline search failed, falling back to standard methods:', pipelineError.message);
+        }
+        
+        // Fallback: Try direct tasks endpoint
+        try {
+            console.log('Trying direct tasks endpoint...');
             const tasksResponse = await axios.get('https://services.leadconnectorhq.com/tasks/', {
                 headers: {
                     'Authorization': `Bearer ${tokens.access_token}`,
@@ -714,12 +855,20 @@ app.get('/tasks', async (req, res) => {
                 }
             });
             
+            const tasks = tasksResponse.data.tasks || tasksResponse.data;
+            const enhancedTasks = tasks.map(task => ({
+                ...task,
+                source: 'direct_tasks_endpoint',
+                method: 'Direct tasks API call'
+            }));
+            
             return res.json({
                 success: true,
                 location_id: locationId,
-                tasks: tasksResponse.data.tasks || tasksResponse.data,
-                tasks_count: tasksResponse.data.tasks ? tasksResponse.data.tasks.length : 0,
-                source: 'direct_tasks_endpoint'
+                tasks: enhancedTasks,
+                tasks_count: enhancedTasks.length,
+                source: 'direct_tasks_endpoint',
+                method: 'Direct tasks API call'
             });
             
         } catch (directTasksError) {
@@ -757,7 +906,9 @@ app.get('/tasks', async (req, res) => {
                             name: contact.contactName,
                             email: contact.email,
                             phone: contact.phone
-                        }
+                        },
+                        source: 'contact_based_tasks',
+                        method: 'Fetched tasks from contacts'
                     }));
                     
                     allTasks.push(...contactTasks);
@@ -771,13 +922,117 @@ app.get('/tasks', async (req, res) => {
                 location_id: locationId,
                 tasks: allTasks,
                 tasks_count: allTasks.length,
-                source: 'contact_based_tasks'
+                source: 'contact_based_tasks',
+                method: 'Fetched tasks from contacts'
             });
         }
         
     } catch (error) {
         console.error('Tasks error:', error.response?.data || error.message);
         res.status(500).json({ error: 'Failed to fetch tasks', details: error.response?.data || error.message });
+    }
+});
+
+// New endpoint specifically for your target pipeline tasks with rich context
+app.get('/pipeline-tasks-rich', async (req, res) => {
+    try {
+        const locationId = 'QLyYYRoOhCg65lKW9HDX'; // Your location ID
+        const tokens = await getStoredTokens(locationId);
+        
+        if (!tokens) {
+            return res.status(401).json({ error: 'No tokens found. Please re-authenticate.' });
+        }
+        
+        console.log('🎯 Fetching rich pipeline tasks from target pipeline...');
+        
+        // Target pipeline configuration (matching your standalone script)
+        const TARGET_PIPELINE = {
+            name: 'Client Software Development Pipeline',
+            id: 'uR2CMkTiwqoUOYuf8oGR'
+        };
+        
+        // Search for opportunities with tasks in our target pipeline
+        const searchUrl = 'https://services.leadconnectorhq.com/opportunities/search';
+        const searchParams = {
+            location_id: locationId,
+            pipeline_id: TARGET_PIPELINE.id,
+            getTasks: true, // This is the key parameter to get tasks!
+            limit: 100, // Get up to 100 opportunities
+            status: 'all' // Get all statuses
+        };
+        
+        const searchResponse = await axios.get(searchUrl, {
+            params: searchParams,
+            headers: {
+                'Authorization': `Bearer ${tokens.access_token}`,
+                'Version': '2021-07-28',
+                'Accept': 'application/json'
+            }
+        });
+        
+        const searchData = searchResponse.data;
+        const opportunities = searchData.opportunities || [];
+        
+        // Extract all tasks from opportunities with rich context
+        const allTasks = [];
+        const opportunitiesWithTasks = [];
+        
+        opportunities.forEach(opportunity => {
+            if (opportunity.tasks && Array.isArray(opportunity.tasks) && opportunity.tasks.length > 0) {
+                // Add rich opportunity context to each task
+                const tasksWithContext = opportunity.tasks.map(task => ({
+                    ...task,
+                    opportunity_id: opportunity.id,
+                    opportunity_title: opportunity.title || opportunity.name || 'Untitled',
+                    opportunity_status: opportunity.status,
+                    opportunity_stage: opportunity.stage || opportunity.stageName,
+                    opportunity_value: opportunity.value,
+                    pipeline_id: opportunity.pipelineId || opportunity.pipeline_id,
+                    // Additional metadata
+                    source: 'pipeline_opportunities_search',
+                    method: `Searched opportunities with tasks in pipeline: ${TARGET_PIPELINE.name}`
+                }));
+                
+                allTasks.push(...tasksWithContext);
+                opportunitiesWithTasks.push({
+                    opportunity: opportunity,
+                    tasks: opportunity.tasks,
+                    task_count: opportunity.tasks.length
+                });
+            }
+        });
+        
+        console.log(`✅ Found ${opportunities.length} opportunities in target pipeline`);
+        console.log(`📋 Found ${allTasks.length} total tasks across opportunities`);
+        console.log(`🎯 Opportunities with tasks: ${opportunitiesWithTasks.length}`);
+        
+        res.json({
+            success: true,
+            location_id: locationId,
+            pipeline_id: TARGET_PIPELINE.id,
+            pipeline_name: TARGET_PIPELINE.name,
+            opportunities: opportunities,
+            opportunities_count: opportunities.length,
+            tasks: allTasks,
+            tasks_count: allTasks.length,
+            opportunities_with_tasks: opportunitiesWithTasks,
+            source: 'pipeline_opportunities_search',
+            method: `Searched opportunities with tasks in pipeline: ${TARGET_PIPELINE.name}`,
+            search_metadata: {
+                endpoint: 'opportunities/search',
+                pipeline_filter: TARGET_PIPELINE.id,
+                getTasks: true,
+                status_filter: 'all',
+                limit: 100
+            }
+        });
+        
+    } catch (error) {
+        console.error('Pipeline tasks rich error:', error.response?.data || error.message);
+        res.status(500).json({ 
+            error: 'Failed to fetch rich pipeline tasks', 
+            details: error.response?.data || error.message 
+        });
     }
 });
 

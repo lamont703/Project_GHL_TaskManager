@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-logo {
+            margin-bottom: 2rem;
+        }
+
+        .login-logo h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-logo p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .demo-accounts {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .demo-accounts h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .demo-account {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: 1px solid #e1e5e9;
+        }
+
+        .demo-account:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .demo-account strong {
+            color: #667eea;
+        }
+
+        .forgot-password {
+            margin-top: 1rem;
+        }
+
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .back-to-home {
+            margin-top: 2rem;
+        }
+
+        .back-to-home a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-to-home a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .login-logo h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-logo">
+                <h1>Task Manager</h1>
+                <p>Sign in to your account</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="remember" name="remember" style="margin-right: 0.5rem;">
+                        <label for="remember" style="font-size: 0.9rem; color: #666;">Remember me</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Sign In</button>
+
+                <div class="forgot-password">
+                    <a href="#">Forgot your password?</a>
+                </div>
+                
+                <div class="demo-prompt" style="margin-top: 1.5rem; text-align: center;">
+                    <p style="color: #666; margin-bottom: 1rem;">Want to explore first?</p>
+                    <button type="button" class="btn btn-secondary" onclick="tryDemo()">Try Demo</button>
+                </div>
+            </form>
+
+            <div class="demo-accounts">
+                <h3>Demo Accounts</h3>
+                <div class="demo-account" data-email="admin@company.com" data-password="admin123">
+                    <strong>Admin:</strong> admin@company.com / admin123
+                </div>
+                <div class="demo-account" data-email="john@company.com" data-password="john123">
+                    <strong>John:</strong> john@company.com / john123
+                </div>
+                <div class="demo-account" data-email="sarah@company.com" data-password="sarah123">
+                    <strong>Sarah:</strong> sarah@company.com / sarah123
+                </div>
+            </div>
+
+            <div class="back-to-home">
+                <a href="index.html">← Back to Home</a>
+            </div>
+            
+            <div class="demo-info" style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                    <strong>Demo Mode:</strong> Use any of the demo accounts above to explore the system
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Demo authentication
+            const validCredentials = [
+                { email: 'admin@company.com', password: 'admin123', name: 'Admin User', role: 'admin' },
+                { email: 'john@company.com', password: 'john123', name: 'John Doe', role: 'user' },
+                { email: 'sarah@company.com', password: 'sarah123', name: 'Sarah Smith', role: 'user' }
+            ];
+
+            const user = validCredentials.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                // Store user data in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('Invalid credentials. Please try again.');
+            }
+        });
+
+        // Add click handlers for demo accounts
+        document.querySelectorAll('.demo-account').forEach(account => {
+            account.addEventListener('click', function () {
+                document.getElementById('email').value = this.dataset.email;
+                document.getElementById('password').value = this.dataset.password;
+            });
+        });
+    </script>
+</body>
+
+</html>
