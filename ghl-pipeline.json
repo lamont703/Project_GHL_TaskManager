@@ -1,0 +1,380 @@
+{
+  "name": "ghl-pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7edededc-2f40-4b8e-b8db-ab4816f1a28e",
+              "name": "base_url",
+              "type": "string",
+              "value": "=https://services.leadconnectorhq.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7c78ea68-d848-4e09-a010-7117438ac788",
+      "cid": "Ikx1Y2FzIFBleXJpbiI",
+      "name": "Base URL",
+      "type": "n8n-nodes-base.set",
+      "creator": "Lucas Peyrin",
+      "position": [
+        528,
+        -80
+      ],
+      "typeVersion": 3.4,
+      "notes": "© 2025 Lucas Peyrin"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Base URL').item.json.base_url }}/opportunities/search?location_id={{ $json.location.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "highLevelOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "getTasks",
+              "value": "true"
+            },
+            {
+              "name": "pipeline_id",
+              "value": "uR2CMkTiwqoUOYuf8oGR"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoQ2xhc3MiOiJMb2NhdGlvbiIsImF1dGhDbGFzc0lkIjoiUUx5WVlSb09oQ2c2NWxLVzlIRFgiLCJzb3VyY2UiOiJJTlRFR1JBVElPTiIsInNvdXJjZUlkIjoiNjg3NTkzNjFhMWE3ZjkzZmRiODE1YjhkLW1kM3FyOWswIiwiY2hhbm5lbCI6Ik9BVVRIIiwicHJpbWFyeUF1dGhDbGFzc0lkIjoiUUx5WVlSb09oQ2c2NWxLVzlIRFgiLCJvYXV0aE1ldGEiOnsic2NvcGVzIjpbImNvbnRhY3RzLnJlYWRvbmx5IiwiY29udGFjdHMud3JpdGUiLCJsb2NhdGlvbnMvdGFza3MucmVhZG9ubHkiLCJsb2NhdGlvbnMvdGFza3Mud3JpdGUiLCJjYWxlbmRhcnMucmVhZG9ubHkiLCJjYWxlbmRhcnMud3JpdGUiLCJvcHBvcnR1bml0aWVzLnJlYWRvbmx5Iiwib3Bwb3J0dW5pdGllcy53cml0ZSIsIndvcmtmbG93cy5yZWFkb25seSIsInVzZXJzLnJlYWRvbmx5IiwibG9jYXRpb25zLnJlYWRvbmx5Il0sImNsaWVudCI6IjY4NzU5MzYxYTFhN2Y5M2ZkYjgxNWI4ZCIsInZlcnNpb25JZCI6IjY4NzU5MzYxYTFhN2Y5M2ZkYjgxNWI4ZCIsImNsaWVudEtleSI6IjY4NzU5MzYxYTFhN2Y5M2ZkYjgxNWI4ZC1tZDNxcjlrMCJ9LCJpYXQiOjE3NTQ3OTIwMDIuMDQsImV4cCI6MTc1NDg3ODQwMi4wNH0.I7jxyMppMS228jRiOfT2kYnw5jZcAoI6gDJN7ekKGtKa9Xy9JKUoyPnfZsQhl7WiZbg58Mxv3nVMzHV3aQfGDnFLJ7oxt0hMOhFyc1ercvfZWdfBOVqWrYA1Rzmcb_dsr4hw5FJ9Er4kCMcuNJ9OghWLBTyz_W2-awxEMM_EsFMxhEYmpQCeOHKrqy6hxAToxzFJa63KFeLI8EzPFrbvF7Lr_6WoGcFWxY8VwIBTQP-sszsigwr10J06ncCmu0HuRqvYTIcTSgrUOrQ2-P9ilCy2SMrPfDZMP"
+            },
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        144
+      ],
+      "id": "d580262e-c2fb-4e74-a981-514ae56e31ad",
+      "name": "search opportunity",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "vdN3ltGBDxTn0vbJ",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.base_url }}/locations/QLyYYRoOhCg65lKW9HDX",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "highLevelOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoQ2xhc3MiOiJMb2NhdGlvbiIsImF1dGhDbGFzc0lkIjoiUUx5WVlSb09oQ2c2NWxLVzlIRFgiLCJzb3VyY2UiOiJJTlRFR1JBVElPTiIsInNvdXJjZUlkIjoiNjg3NTkzNjFhMWE3ZjkzZmRiODE1YjhkLW1kM3FyOWswIiwiY2hhbm5lbCI6Ik9BVVRIIiwicHJpbWFyeUF1dGhDbGFzc0lkIjoiUUx5WVlSb09oQ2c2NWxLVzlIRFgiLCJvYXV0aE1ldGEiOnsic2NvcGVzIjpbImNvbnRhY3RzLnJlYWRvbmx5IiwiY29udGFjdHMud3JpdGUiLCJvcHBvcnR1bml0aWVzLnJlYWRvbmx5Iiwib3Bwb3J0dW5pdGllcy53cml0ZSIsImNhbGVuZGFycy5yZWFkb25seSIsImNhbGVuZGFycy53cml0ZSIsImxvY2F0aW9ucy5yZWFkb25seSIsInVzZXJzLnJlYWRvbmx5Il0sImNsaWVudCI6IjY4NzU5MzYxYTFhN2Y5M2ZkYjgxNWI4ZCIsInZlcnNpb25JZCI6IjY4NzU5MzYxYTFhN2Y5M2ZkYjgxNWI4ZCIsImNsaWVudEtleSI6IjY4NzU5MzYxYTFhN2Y5M2ZkYjgxNWI4ZC1tZDNxcjlrMCJ9LCJpYXQiOjE3NTQ4MDY1MjIuMTksImV4cCI6MTc4NjM0MjUyMi4xOSwidW5pcXVlSWQiOiIyOWNjMDZjZC00MmQ3LTQyN2UtYTVjOC0wODM0ZmJkZTQ2YjIiLCJ2IjoiMiJ9.cln7kVE5W35mpFNUesNsn_KY0lP2iplLytojORh6qhNyFRH2eSd1wGIvunlcM69LT2rEf2SmU4NPKQh1TOtFMYM86mCjamkBM-Qc1oM7Ixg9D7DRpBp70y4FtRMEbIYq2J-9u_PdcSVvs2mchX7sjZ4f8o32OAd02S2MvTVhx07r9eZvAxPjgSvk07om8x-tGV01TDdqSB5VYL-okp8AbHu7q_dWlEMMIzY9noHsKcccK7jxxNZLFqS0WEIb8vhj3riU4Z16AD5lAwFbIcm3jUwQMFkQyrMeYeXwt93KGfaZq82yN_HIkj3dGoQDx9F7_8GFQbnPaX0m6z6CyjVezhWnw558sfL7hS0-mO8qOvRTxmjKfz9R5EodNL_tJOvYbLT3_HneSa7MjmUdHVDDxW9HvvNLR6M20-2LZkgueG3AlxuNgnYs9Ypkmb7WGulc4LokCtAU-IGKLwPCK1z1kTQYRoIMRoeSm2diTvblvjJ6PgRXSZlORL7qSb_6aQq5LJj_p6mc0PfymAehJrL8vx5p2qsKAr5uivbRf5WdPMPleojtUvjDBYPLf930yTCrh7GmYgEq-MuZiYmwS1ziCKseOLx8Q8-zvJs_t4xOaGEyvhbTMxKBQzOCtn4deINDbNUvtBQhd34PVWKGf-pWDVmJa4uGWseyGGwabZ0XEgw"
+            },
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        144
+      ],
+      "id": "38a2837f-e894-47f5-a70b-47e90f2d5e0a",
+      "name": "location-id-QLyYYRoOhCg65lKW9HDX",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "vdN3ltGBDxTn0vbJ",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.transcript }} and always use the tool you have access to",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        -80
+      ],
+      "id": "33403e74-b286-48db-8bbf-adfc62f73c8f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        256
+      ],
+      "id": "bcb17db3-1abb-45dd-9aab-fa51d2f0615d",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RkZ4DkxG6yP75dPe",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "5bebca1f-d31b-4f0e-9034-c1c9902a3c6f",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        -208
+      ],
+      "id": "4c92349d-64e9-430e-92b4-3ff18432e9de",
+      "name": "Webhook",
+      "webhookId": "5bebca1f-d31b-4f0e-9034-c1c9902a3c6f"
+    },
+    {
+      "parameters": {
+        "url": "=https://n8n-service-3446.onrender.com/webhook/5bebca1f-d31b-4f0e-9034-c1c9902a3c6f",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "d0a4d89d-0f6b-49dc-ae34-a9d3f8da3cff",
+      "cid": "Ikx1Y2FzIFBleXJpbiI",
+      "name": "get-task-webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "creator": "Lucas Peyrin",
+      "position": [
+        0,
+        192
+      ],
+      "typeVersion": 4.1,
+      "notes": "© 2025 Lucas Peyrin"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "get-task",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "headers",
+                "value": "{   \"Access-Control-Allow-Origin\": \"*\",   \"Access-Control-Allow-Methods\": \"GET, POST, OPTIONS\",   \"Access-Control-Allow-Headers\": \"*\" }"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -912,
+        -80
+      ],
+      "id": "b9fed291-c47a-4b09-a15a-f38175272d02",
+      "name": "Webhook1",
+      "webhookId": "eb0bec51-58ef-4dda-8920-34f1851a2fc4"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of items) {\n  let opportunities = item.json.opportunities || (item.json.json && item.json.json.opportunities);\n  if (!opportunities || !Array.isArray(opportunities) || opportunities.length === 0) {\n    item.json = { formattedOutput: 'No opportunities data available.' };\n    continue;\n  }\n  let output = '--- Opportunity Report ---\\n\\n';\n  opportunities.forEach((opportunity, index) => {\n    output += `Opportunity #${index + 1}\\n` +\n      '--------------------------\\n' +\n      `Project Name: ${opportunity.name || 'N/A'}\\n` +\n      `Status: ${opportunity.status || 'N/A'}\\n` +\n      `Value: $${opportunity.monetaryValue !== undefined ? opportunity.monetaryValue : 'N/A'}\\n`;\n    const contact = opportunity.contact;\n    if (contact) {\n      output += '\\nContact:\\n' +\n        `  Name: ${contact.name || 'N/A'}\\n` +\n        `  Company: ${contact.companyName || 'N/A'}\\n` +\n        `  Email: ${contact.email || 'N/A'}\\n` +\n        `  Phone: ${contact.phone || 'N/A'}\\n`;\n      if (contact.tags && contact.tags.length > 0) {\n        output += `  Tags: ${contact.tags.join(', ')}\\n`;\n      }\n    }\n    const incompleteTasks = opportunity.tasks ? opportunity.tasks.filter(task => !task.completed) : [];\n    if (incompleteTasks.length > 0) {\n      output += '\\nIncomplete Tasks:\\n';\n      incompleteTasks.forEach(task => {\n        const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-US', { dateStyle: 'medium' }) : 'N/A';\n        output += `  - Title: ${task.title || 'N/A'}\\n` +\n          `    Due Date: ${dueDate}\\n` +\n          `    Description: ${task.description || 'N/A'}\\n`;\n      });\n    } else {\n      output += '\\nIncomplete Tasks: None\\n';\n    }\n    output += '\\n\\n';\n  });\n  item.json = { formattedOutput: output.trim() };\n}\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        176
+      ],
+      "id": "809f4c6a-006b-4e9a-8ea1-56ec2cd18d58",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "headers",
+              "value": "\"Access-Control-Allow-Origin\": \"*\", \"Access-Control-Allow-Methods\": \"GET, POST, OPTIONS\", \"Access-Control-Allow-Headers\": \"*\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        752,
+        496
+      ],
+      "id": "561e3fb6-b0ee-4ced-bac4-56d3cdb3a6d5",
+      "name": "Set CORS Headers1"
+    },
+    {
+      "parameters": {
+        "toolDescription": "always use this tool. alwaysyou have access to get pipelines and the name and the tasks in said pipeline. give the users any query they ask when dealing with go high level api pipeline",
+        "url": "https://n8n-service-3446.onrender.com/webhook/5bebca1f-d31b-4f0e-9034-c1c9902a3c6f",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Name', ``, 'string') }}",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        256
+      ],
+      "id": "2b9fabde-ed04-4ead-ba38-55ccd2bf59ed",
+      "name": "tool"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Base URL": {
+      "main": [
+        [
+          {
+            "node": "location-id-QLyYYRoOhCg65lKW9HDX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "location-id-QLyYYRoOhCg65lKW9HDX": {
+      "main": [
+        [
+          {
+            "node": "search opportunity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search opportunity": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Base URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Set CORS Headers1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6bb3cbbb-9422-4a7d-a7f4-2a224bb05420",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "65aaf29a34f857503380ca53a6385baa3506f1734755f22251b9f6680a455ab8"
+  },
+  "id": "oWyLCXTVkEPE2yVv",
+  "tags": []
+}
